@@ -82,13 +82,26 @@ function resolveImports(mod: ResolvedModule): void {
   const importsByAlias = mod.importsByAlias;
 
   for (const imp of ast.imports) {
-    // Reject remote imports
-    if (imp.path.includes("://")) {
+    // v0 only supports relative local imports. Anything not starting with
+    // "./" or "../" is rejected: a URI scheme (e.g. https://, github:) is a
+    // remote import; anything else (bare or absolute) is a non-relative local
+    // path. Both are diagnosed distinctly so the message is actionable.
+    const isRelative = imp.path.startsWith("./") || imp.path.startsWith("../");
+    if (!isRelative) {
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(imp.path)) {
+        throw LoomError.single(
+          "module",
+          "LOOM_MODULE_REMOTE_IMPORT",
+          `Remote imports are not supported in v0: "${imp.path}"`,
+          imp.pathSpan,
+        );
+      }
       throw LoomError.single(
         "module",
-        "LOOM_MODULE_REMOTE_IMPORT",
-        `Remote imports are not supported in v0: "${imp.path}"`,
+        "LOOM_MODULE_NON_RELATIVE_IMPORT",
+        `Import paths must be relative and start with "./" or "../": "${imp.path}"`,
         imp.pathSpan,
+        `Use a path like "./prompts/refactor.loom" or "../shared/prompts.loom".`,
       );
     }
 

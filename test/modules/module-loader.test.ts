@@ -215,6 +215,51 @@ describe("LOOM_MODULE_REMOTE_IMPORT", () => {
 
     expectCode(() => loadModuleGraph(join(tmp, "main.loom")), "LOOM_MODULE_REMOTE_IMPORT");
   });
+
+  it("rejects scheme-style paths like github:org/repo", () => {
+    const tmp = makeTmpDir();
+    writeFile(tmp, "main.loom", `module "main" {}\nimport "github:org/repo/foo.loom" as foo`);
+
+    expectCode(() => loadModuleGraph(join(tmp, "main.loom")), "LOOM_MODULE_REMOTE_IMPORT");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Import path rules: only ./ and ../ relative paths are allowed
+// ---------------------------------------------------------------------------
+
+describe("import path rules", () => {
+  it("accepts a ./ relative import", () => {
+    const tmp = makeTmpDir();
+    writeFile(tmp, "main.loom", `module "main" {}\nimport "./lib.loom" as lib`);
+    writeFile(tmp, "lib.loom", `module "lib" {}\nexport prompt "P" { template = "x" }`);
+
+    const graph = loadModuleGraph(join(tmp, "main.loom"));
+    expect(graph.entry.importsByAlias.has("lib")).toBe(true);
+  });
+
+  it("accepts a ../ relative import", () => {
+    const tmp = makeTmpDir();
+    writeFile(tmp, "sub/main.loom", `module "main" {}\nimport "../shared/p.loom" as p`);
+    writeFile(tmp, "shared/p.loom", `module "shared.p" {}\nexport prompt "P" { template = "x" }`);
+
+    const graph = loadModuleGraph(join(tmp, "sub/main.loom"));
+    expect(graph.entry.importsByAlias.has("p")).toBe(true);
+  });
+
+  it("rejects a bare (non-relative) import path", () => {
+    const tmp = makeTmpDir();
+    writeFile(tmp, "main.loom", `module "main" {}\nimport "prompts/refactor.loom" as p`);
+
+    expectCode(() => loadModuleGraph(join(tmp, "main.loom")), "LOOM_MODULE_NON_RELATIVE_IMPORT");
+  });
+
+  it("rejects an absolute import path", () => {
+    const tmp = makeTmpDir();
+    writeFile(tmp, "main.loom", `module "main" {}\nimport "/absolute/path/refactor.loom" as p`);
+
+    expectCode(() => loadModuleGraph(join(tmp, "main.loom")), "LOOM_MODULE_NON_RELATIVE_IMPORT");
+  });
 });
 
 // ---------------------------------------------------------------------------

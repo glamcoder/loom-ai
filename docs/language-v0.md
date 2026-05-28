@@ -6,12 +6,14 @@ This document is the authoritative reference for the Loom DSL as implemented in 
 
 ## 1. Source files
 
-Each `.loom` file is exactly one module. A module contains any combination of:
+Each `.loom` file is exactly one module. The top-level forms must appear in this fixed order:
 
-- exactly one `module` declaration (required, must appear first);
-- zero or more `import` statements;
-- zero or more `prompt` or `program` blocks (exported or unexported);
-- zero or more `test` blocks.
+1. exactly one `module` declaration (required, must be the first form);
+2. zero or more `import` statements;
+3. zero or more `prompt` or `program` blocks (exported or unexported);
+4. zero or more `test` blocks.
+
+The ordering is enforced by the parser: a top-level form before the `module` block is rejected (`LOOM_PARSE_MODULE_NOT_FIRST`), and an `import` after any prompt/program/test block is rejected (`LOOM_PARSE_IMPORT_AFTER_DEFINITION`). Definitions and tests may be interleaved with one another, but all imports must precede them.
 
 There is no support for inline modules or multi-file concatenation. One file, one module.
 
