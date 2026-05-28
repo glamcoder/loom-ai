@@ -7,9 +7,12 @@
  */
 
 import { describe, it, expect } from "vitest";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { validateModule } from "../../src/compiler/compiler";
+import { validateModule, compileProgram } from "../../src/compiler/compiler";
+import { runProgram } from "../../src/runtime/runtime";
+import { MemoryFileSystem } from "../../src/runtime/filesystem";
 import { LoomError } from "../../src/language/diagnostics";
 
 // ---------------------------------------------------------------------------
@@ -255,4 +258,124 @@ import "./mid.loom" as mid`,
       "LOOM_SEMANTIC_PROMPT_NO_TEMPLATE",
     );
   });
+});
+
+// ---------------------------------------------------------------------------
+// 9. compileProgram is as strict as validateModule (graph-wide)
+// ---------------------------------------------------------------------------
+
+describe("compileProgram: graph-wide validation", () => {
+  it("fails when an imported prompt is missing template, even if the program never uses it", () => {
+    const vfs = makeVfs({
+      "/vfs/badlib.loom": `
+module "badlib" {}
+export prompt "NoTemplate" {
+  returns = Markdown
+}`,
+      "/vfs/main.loom": `
+module "main" {}
+import "./badlib.loom" as badlib
+
+export program "Run" {
+  effects = []
+
+  output "result" {
+    type = Text
+    from = "hello"
+  }
+}`,
+    });
+
+    expectCode(
+      () => compileProgram("/vfs/main.loom", "Run", {}, { readFile: vfs }),
+      "LOOM_SEMANTIC_PROMPT_NO_TEMPLATE",
+    );
+  });
+
+  it("fails when a transitively imported module is malformed", () => {
+    const vfs = makeVfs({
+      "/vfs/deep.loom": `
+module "deep" {}
+export prompt "Broken" {
+  returns = Text
+}`,
+      "/vfs/mid.loom": `
+module "mid" {}
+import "./deep.loom" as deep`,
+      "/vfs/main.loom": `
+module "main" {}
+import "./mid.loom" as mid
+
+export program "Run" {
+  effects = []
+
+  output "result" {
+    type = Text
+    from = "hi"
+  }
+}`,
+    });
+
+    expectCode(
+      () => compileProgram("/vfs/main.loom", "Run", {}, { readFile: vfs }),
+      "LOOM_SEMANTIC_PROMPT_NO_TEMPLATE",
+    );
+  });
+
+  it("valid examples still compile and run", () => {
+    const ir = compileProgram(join(examplesDir, "refactor.loom"), "PrepareRefactor", {
+      method: "foo",
+      file: "src/foo.ts",
+    });
+    expect(ir.program).toBe("PrepareRefactor");
+
+    const fs = new MemoryFileSystem();
+    const result = runProgram(ir, {
+      fs,
+      noTrace: true,
+      now: () => new Date("2024-01-01T00:00:00.000Z"),
+      makeRunId: () => "graph-validation-test",
+    });
+    expect(result.filesWritten).toHaveLength(1);
+    expect(result.outputs["agent_instructions"]).toContain("foo");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 10. CLI: loom compile fails for malformed imported modules
+// ---------------------------------------------------------------------------
+
+describe("CLI loom compile: malformed imported module", () => {
+  const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
+  const cliEntry = join(repoRoot, "src/cli/index.ts");
+  const tsxBin = join(repoRoot, "node_modules/.bin/tsx");
+
+  function runCli(args: string[], cwd: string): { status: number; stderr: string } {
+    try {
+      execFileSync(tsxBin, [cliEntry, ...args], { cwd, encoding: "utf-8" });
+      return { status: 0, stderr: "" };
+    } catch (err: unknown) {
+      const e = err as { status?: number; stderr?: string };
+      return { status: e.status ?? 1, stderr: e.stderr ?? "" };
+    }
+  }
+
+  it("exits nonzero when an imported module is malformed", async () => {
+    const { mkdtempSync, writeFileSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const dir = mkdtempSync(join(tmpdir(), "loom-graphval-"));
+    writeFileSync(
+      join(dir, "badlib.loom"),
+      `module "badlib" {}\nexport prompt "NoTemplate" {\n  returns = Markdown\n}`,
+      "utf-8",
+    );
+    writeFileSync(
+      join(dir, "main.loom"),
+      `module "main" {}\nimport "./badlib.loom" as badlib\n\nexport program "Run" {\n  effects = []\n  output "result" {\n    type = Text\n    from = "hi"\n  }\n}`,
+      "utf-8",
+    );
+
+    const { status } = runCli(["compile", join(dir, "main.loom"), "Run"], dir);
+    expect(status).not.toBe(0);
+  }, 30_000);
 });

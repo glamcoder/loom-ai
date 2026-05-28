@@ -71,6 +71,14 @@ export function compileProgram(
   const graph = loadModuleGraph(absEntry, { readFile: options?.readFile });
   const entryModule = graph.entry;
 
+  // Graph-wide structural validation: every module in the import graph must be
+  // well-formed before we lower the selected program. This keeps `loom compile`
+  // and `loom run` exactly as strict as `loom validate`, so a malformed imported
+  // module is caught even when the selected program never references it.
+  for (const mod of graph.modules.values()) {
+    validateModuleStructure(graph, mod);
+  }
+
   // Find the program
   const def = entryModule.definitionsByName.get(programName);
   if (!def) {
