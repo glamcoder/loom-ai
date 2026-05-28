@@ -1,0 +1,64 @@
+module "workflows.refactor" {
+  version = "0.1.0"
+}
+
+import "./prompts/refactor.loom" as refactor
+
+export program "PrepareRefactor" {
+  param "method" {
+    type = Symbol
+    required = true
+  }
+
+  param "file" {
+    type = Path
+    required = true
+  }
+
+  param "goal" {
+    type = Text
+    default = "Improve readability without changing behavior."
+  }
+
+  effects = ["fs.write"]
+
+  step "render_instructions" {
+    use = refactor.RefactorMethod
+
+    with = {
+      method = param.method
+      file = param.file
+      goal = param.goal
+    }
+  }
+
+  step "write_agent_file" {
+    use = fs.write
+
+    with = {
+      path = dirname(param.file) + "/AGENTS.md"
+      content = step.render_instructions.output
+    }
+  }
+
+  output "agent_instructions" {
+    type = Markdown
+    from = step.render_instructions.output
+  }
+}
+
+test "prepare_refactor_renders_agent_file" {
+  program = PrepareRefactor
+
+  with = {
+    method = "calculateTotalCost"
+    file = "src/billing/costs.ts"
+  }
+
+  expect {
+    output "agent_instructions" contains "calculateTotalCost"
+    output "agent_instructions" contains "Preserve external behavior"
+    writes file "src/billing/AGENTS.md"
+    effects = ["fs.write"]
+  }
+}
