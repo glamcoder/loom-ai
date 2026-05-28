@@ -31,7 +31,7 @@
     "compiler",
     "agents"
   ],
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "dependencies": {
     "commander": "^12.1.0",
     "zod": "^3.23.8"

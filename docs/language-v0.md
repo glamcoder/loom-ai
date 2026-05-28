@@ -1,28 +1,464 @@
-# Loom Language v0 Draft
+# Loom Language Reference — v0
 
-One `.loom` file contains one module. Multiple prompts, programs, and tests are allowed.
+This document is the authoritative reference for the Loom DSL as implemented in v0. v0 is strictly deterministic: no real LLM calls, no provider SDKs, no network or shell execution.
 
-## Supported top-level forms
+---
+
+## 1. Source files
+
+Each `.loom` file is exactly one module. A module contains any combination of:
+
+- exactly one `module` declaration (required, must appear first);
+- zero or more `import` statements;
+- zero or more `prompt` or `program` blocks (exported or unexported);
+- zero or more `test` blocks.
+
+There is no support for inline modules or multi-file concatenation. One file, one module.
+
+---
+
+## 2. Module declaration
 
 ```hcl
-module "name" { version = "0.1.0" }
-import "./file.loom" as alias
-export prompt "Name" { ... }
-export program "Name" { ... }
-test "name" { ... }
+module "workflows.refactor" {
+  version = "0.1.0"
+}
 ```
 
-## v0 operations
+- The module name is a dot-separated identifier string (e.g. `"prompts.refactor"`, `"workflows.refactor"`).
+- `version` is a semver string. It is recorded in compiled IR and traces.
+- The `module` block must be the first top-level form in the file.
 
-- `prompt.render`
-- `fs.write`
-- `artifact.emit`
+---
 
-## Future operations
+## 3. Import syntax
 
-- `llm.complete`
-- `parse.json`
-- `validate.schema`
-- `shell.run`
-- `human.approve`
-- `agent.execute`
+```hcl
+import "./prompts/refactor.loom" as refactor
+```
+
+- Imports are local and path-relative only. Remote imports are not supported in v0.
+- The path must be a string literal with a `./` or `../` prefix.
+- `as alias` binds the imported module's exported symbols under the given alias in the current file.
+- Circular imports are a compile-time error.
+- Only exported symbols from the imported module are accessible.
+
+Accessing an imported symbol:
+
+```hcl
+use = refactor.RefactorMethod
+```
+
+The alias (`refactor`) is separated from the exported name (`RefactorMethod`) by a dot.
+
+---
+
+## 4. Export syntax
+
+Top-level `prompt` and `program` blocks may be prefixed with `export` to make them available to importing modules:
+
+```hcl
+export prompt "RefactorMethod" { ... }
+export program "PrepareRefactor" { ... }
+```
+
+Blocks without `export` are private to the module. Test blocks are never exported.
+
+---
+
+## 5. Prompt blocks
+
+A `prompt` block defines a reusable, parameterized text template. It is the building block for instructions sent to agents or future LLM calls.
+
+```hcl
+export prompt "RefactorMethod" {
+  param "method" {
+    type     = Symbol
+    required = true
+  }
+
+  param "file" {
+    type     = Path
+    required = true
+  }
+
+  param "goal" {
+    type    = Text
+    default = "Improve readability without changing behavior."
+  }
+
+  returns = Markdown
+
+  template = """
+# Refactor method `{{ method }}`
+
+You are refactoring `{{ method }}` in `{{ file }}`.
+
+## Goal
+
+{{ goal }}
+
+## Scope
+
+- Refactor only `{{ method }}` and the smallest necessary surrounding code.
+- Preserve external behavior.
+"""
+}
+```
+
+Fields:
+
+| Field      | Required | Description |
+|------------|----------|-------------|
+| `param`    | no       | Zero or more parameter blocks (see §6). |
+| `returns`  | no       | The type of the rendered output (e.g. `Markdown`, `Text`). Defaults to `Text`. |
+| `template` | yes      | A triple-quoted string. `{{ name }}` placeholders are replaced by the corresponding param values at render time. |
+
+Template interpolation uses `{{ param_name }}` syntax. All referenced names must be declared as params.
+
+---
+
+## 6. Params and defaults
+
+Params are declared inside `prompt`, `program`, and `test` blocks. Each `param` block has a name string and a body:
+
+```hcl
+param "goal" {
+  type    = Text
+  default = "Improve readability without changing behavior."
+}
+```
+
+| Field      | Required | Description |
+|------------|----------|-------------|
+| `type`     | yes      | One of the built-in types: `Text`, `Symbol`, `Path`, `Markdown`, `Number`, `Boolean`. |
+| `required` | no       | Boolean. If `true`, the param must be supplied at call site. Defaults to `false`. |
+| `default`  | no       | A literal value applied when the param is omitted. Incompatible with `required = true`. |
+
+`required` and `default` are mutually exclusive. A param with `required = true` and a `default` is a compile-time error.
+
+Built-in types in v0:
+
+| Type       | Description |
+|------------|-------------|
+| `Text`     | Arbitrary string. |
+| `Symbol`   | An identifier or short name (e.g. a function name). Treated as `Text` at runtime. |
+| `Path`     | A POSIX file path string. Enables path built-ins. |
+| `Markdown` | A markdown string. Treated as `Text` at runtime; used for documentation and type checking. |
+| `Number`   | A numeric value. |
+| `Boolean`  | `true` or `false`. |
+
+---
+
+## 7. Program blocks
+
+A `program` block defines a multi-step workflow that composes prompts, performs effects, and declares outputs.
+
+```hcl
+export program "PrepareRefactor" {
+  param "method" {
+    type     = Symbol
+    required = true
+  }
+
+  param "file" {
+    type     = Path
+    required = true
+  }
+
+  param "goal" {
+    type    = Text
+    default = "Improve readability without changing behavior."
+  }
+
+  effects = ["fs.write"]
+
+  step "render_instructions" {
+    use = refactor.RefactorMethod
+    with = {
+      method = param.method
+      file   = param.file
+      goal   = param.goal
+    }
+  }
+
+  step "write_agent_file" {
+    use = fs.write
+    with = {
+      path    = dirname(param.file) + "/AGENTS.md"
+      content = step.render_instructions.output
+    }
+  }
+
+  output "agent_instructions" {
+    type = Markdown
+    from = step.render_instructions.output
+  }
+}
+```
+
+---
+
+## 8. Step blocks
+
+Each `step` block within a program defines one unit of work executed in declaration order.
+
+```hcl
+step "step_id" {
+  use  = <operation or imported symbol>
+  with = {
+    key = value
+    ...
+  }
+}
+```
+
+| Field  | Required | Description |
+|--------|----------|-------------|
+| `use`  | yes      | The operation or imported prompt to invoke. Must be a v0 operation or an imported exported prompt reference. |
+| `with` | yes      | A map of argument bindings. Values are expressions (see §10). |
+
+Step outputs are referenced in subsequent steps or output blocks using `step.<id>.output`.
+
+Steps execute in the order they are declared. Forward references to step outputs are a compile-time error.
+
+---
+
+## 9. Output blocks
+
+An `output` block declares a named result of the program that is accessible to callers and tests.
+
+```hcl
+output "agent_instructions" {
+  type = Markdown
+  from = step.render_instructions.output
+}
+```
+
+| Field  | Required | Description |
+|--------|----------|-------------|
+| `type` | yes      | The declared type of the output (e.g. `Markdown`, `Text`). |
+| `from` | yes      | An expression evaluating to the output value. Typically a `step.<id>.output` reference. |
+
+---
+
+## 10. Test blocks
+
+Test blocks are top-level and not nested inside programs. They are never exported.
+
+```hcl
+test "prepare_refactor_renders_agent_file" {
+  program = PrepareRefactor
+
+  with = {
+    method = "calculateTotalCost"
+    file   = "src/billing/costs.ts"
+  }
+
+  expect {
+    output "agent_instructions" contains "calculateTotalCost"
+    output "agent_instructions" contains "Preserve external behavior"
+    writes file "src/billing/AGENTS.md"
+    effects = ["fs.write"]
+  }
+}
+```
+
+| Field     | Required | Description |
+|-----------|----------|-------------|
+| `program` | yes      | Unquoted name of a program defined in the same module. |
+| `with`    | yes      | Input bindings. Values are literal expressions. |
+| `expect`  | yes      | A block of assertions (see below). |
+
+### Expect assertions
+
+| Assertion | Description |
+|-----------|-------------|
+| `output "name" contains "substring"` | Asserts the named output contains the given string. |
+| `writes file "path"` | Asserts the program writes a file at the given path (checked against the in-memory filesystem). |
+| `effects = ["effect.name", ...]` | Asserts the declared effects match exactly. |
+
+The test runner uses an in-memory filesystem — no real disk writes occur during `loom test`.
+
+---
+
+## 11. Expressions
+
+Expressions appear as values in `with`, `from`, `default`, and `expect` contexts.
+
+### Literals
+
+| Syntax | Type |
+|--------|------|
+| `"hello"` | Text / string |
+| `42` | Number |
+| `true` / `false` | Boolean |
+| `"""..."""` | Multi-line Text (triple-quoted; used in templates) |
+
+### Param references
+
+```hcl
+param.method
+param.file
+param.goal
+```
+
+References the value of the named param in the enclosing program or prompt.
+
+### Step output references
+
+```hcl
+step.render_instructions.output
+```
+
+References the output of a previously declared step. Only valid inside program blocks. Forward references are a compile-time error.
+
+### String concatenation
+
+The `+` operator concatenates two string values:
+
+```hcl
+dirname(param.file) + "/AGENTS.md"
+```
+
+No other arithmetic or logical operators are defined in v0.
+
+---
+
+## 12. Built-in functions
+
+Two POSIX path functions are available in v0:
+
+### `dirname(path: Path) -> Text`
+
+Returns the directory component of a POSIX path, equivalent to POSIX `dirname(3)`.
+
+```
+dirname("src/billing/costs.ts")  ->  "src/billing"
+dirname("costs.ts")              ->  "."
+dirname("src/")                  ->  "src"
+```
+
+### `basename(path: Path) -> Text`
+
+Returns the final component of a POSIX path, equivalent to POSIX `basename(3)`.
+
+```
+basename("src/billing/costs.ts")  ->  "costs.ts"
+basename("src/billing/")          ->  "billing"
+```
+
+Both functions operate on the string value of their argument using POSIX semantics on all operating systems. The runtime does not normalize OS-specific separators.
+
+---
+
+## 13. v0 operations
+
+These operations are fully implemented in v0 and may be used in `step` blocks.
+
+### `prompt.render`
+
+Renders a prompt template with the supplied arguments. This is the implicit operation used when a step references an imported or local prompt via `use = alias.PromptName`.
+
+```hcl
+step "render_instructions" {
+  use  = refactor.RefactorMethod
+  with = {
+    method = param.method
+    file   = param.file
+    goal   = param.goal
+  }
+}
+```
+
+### `fs.write`
+
+Writes a string to a file path. Requires `effects = ["fs.write"]` to be declared on the enclosing program.
+
+```hcl
+step "write_agent_file" {
+  use  = fs.write
+  with = {
+    path    = dirname(param.file) + "/AGENTS.md"
+    content = step.render_instructions.output
+  }
+}
+```
+
+Arguments:
+
+| Key       | Type   | Description |
+|-----------|--------|-------------|
+| `path`    | Path   | Destination file path, relative to cwd. |
+| `content` | Text   | The string to write. |
+
+### `artifact.emit`
+
+Marks a value as a named compile artifact. The value is included in the Program IR output and trace.
+
+```hcl
+step "emit" {
+  use  = artifact.emit
+  with = {
+    name    = "agent_instructions"
+    content = step.render_instructions.output
+  }
+}
+```
+
+---
+
+## 14. Effects model
+
+Programs that perform side effects must declare them explicitly:
+
+```hcl
+effects = ["fs.write"]
+```
+
+Rules:
+
+- `fs.write` requires `effects = ["fs.write"]` on the enclosing program.
+- `prompt.render` and `artifact.emit` are pure — they produce values but do not cause external side effects and do not require an effects declaration.
+- Calling `fs.write` in a step without declaring `fs.write` in `effects` is a compile-time error.
+- The declared effects list must match the set of effect-requiring operations used (over- or under-declaration is an error).
+- Test assertions may check `effects = [...]` to verify the declared effect set.
+
+Future effect tokens (reserved, not implemented in v0): `llm.complete`, `shell.run`, `human.approve`, `agent.execute`.
+
+---
+
+## 15. Reserved future operations
+
+The following operations are documented here but are NOT implemented in v0. Using them in a v0 `.loom` file is a compile-time error. They are reserved to prevent accidental naming collisions in DSL extensions.
+
+| Operation          | Future semantics |
+|--------------------|-----------------|
+| `llm.complete`     | Black-box LLM text completion. See `docs/future-llm-complete.md`. |
+| `parse.json`       | Parse untrusted text as JSON. |
+| `validate.schema`  | Validate a value against a schema. |
+| `shell.run`        | Execute a shell command. |
+| `human.approve`    | Pause for human review/approval. |
+| `agent.execute`    | Delegate a task to an autonomous agent. |
+
+---
+
+## 16. Non-goals for v0
+
+The following are explicitly out of scope for v0:
+
+- Real LLM API calls or any network I/O.
+- Provider SDKs (OpenAI, Anthropic, etc.).
+- Remote or registry-based imports.
+- Shell execution (`shell.run`).
+- Arbitrary code execution.
+- Branching or conditional logic.
+- Loops or iteration.
+- Retries or error recovery.
+- Schema validation of model output.
+- Autonomous agent execution.
+- Semantic version solving.
+- Package registry publishing or resolution.
+- Hidden network calls of any kind.
+
+v0's value is repeatability, reuse, Git compatibility, inspectability, and portability — before any live model is involved.
