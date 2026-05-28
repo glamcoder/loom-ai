@@ -39,13 +39,16 @@ export interface CompileOptions {
 
 /**
  * Parse + load module graph + run structural semantic/type/effect validation on
- * ALL definitions in the entry module (no param binding). Throws LoomError on
- * any error; returns the graph on success. Backs `loom validate`.
+ * ALL definitions in every module in the graph (entry + all imports, direct and
+ * transitive). Throws LoomError on any error; returns the graph on success.
+ * Backs `loom validate`.
  */
 export function validateModule(entryFile: string, options?: CompileOptions): ModuleGraph {
   const absEntry = resolve(entryFile);
   const graph = loadModuleGraph(absEntry, { readFile: options?.readFile });
-  validateModuleStructure(graph, graph.entry);
+  for (const mod of graph.modules.values()) {
+    validateModuleStructure(graph, mod);
+  }
   return graph;
 }
 
