@@ -1,5 +1,5 @@
 import { posix } from "node:path";
-import type { StepIR, FsWriteStepIR } from "../../ir/program-ir";
+import type { FsWriteStepIR } from "../../ir/program-ir";
 import type { Executor, ExecutorContext, ExecutorResult } from "../executor-registry";
 
 /**
@@ -9,14 +9,12 @@ import type { Executor, ExecutorContext, ExecutorResult } from "../executor-regi
  * through the injected filesystem, writes the file, and records it in the
  * run's filesWritten list.
  */
-export const fsWriteExecutor: Executor = {
+export const fsWriteExecutor: Executor<FsWriteStepIR> = {
   operation: "fs.write",
 
-  execute(step: StepIR, ctx: ExecutorContext): ExecutorResult {
-    const s = step as FsWriteStepIR;
-
-    const path = String(ctx.evalExpr(s.arguments["path"]));
-    const content = String(ctx.evalExpr(s.arguments["content"]));
+  execute(step: FsWriteStepIR, ctx: ExecutorContext): ExecutorResult {
+    const path = String(ctx.evalExpr(step.arguments["path"]));
+    const content = String(ctx.evalExpr(step.arguments["content"]));
 
     const dir = posix.dirname(path);
     ctx.fs.mkdirp(dir);

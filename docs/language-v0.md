@@ -396,17 +396,20 @@ Arguments:
 
 ### `artifact.emit`
 
-Marks a value as a named compile artifact. The value is included in the Program IR output and trace.
+`artifact.emit` is the operation behind every `output` block — it marks a value
+as a named artifact that is included in the Program IR and trace. You do **not**
+write it as a `step`; using `use = artifact.emit` in a step is a compile-time
+error. Instead, declare an `output` block (see §9) and the compiler lowers it to
+an `artifact.emit` operation:
 
 ```hcl
-step "emit" {
-  use  = artifact.emit
-  with = {
-    name    = "agent_instructions"
-    content = step.render_instructions.output
-  }
+output "agent_instructions" {
+  type = Markdown
+  from = step.render_instructions.output
 }
 ```
+
+In compiled IR each output appears as `{ "operation": "artifact.emit", "name": ..., "type": ..., "from": ... }`, and the runtime executes it through the executor registry like any other operation.
 
 ---
 

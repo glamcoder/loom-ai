@@ -1,4 +1,5 @@
-import type { StepIR, PromptRenderStepIR } from "../../ir/program-ir";
+import type { PromptRenderStepIR } from "../../ir/program-ir";
+import type { LoomScalar } from "../../stdlib/types";
 import { renderTemplate } from "../../templating/renderer";
 import type { Executor, ExecutorContext, ExecutorResult } from "../executor-registry";
 
@@ -8,27 +9,25 @@ import type { Executor, ExecutorContext, ExecutorResult } from "../executor-regi
  * Builds a variable map by applying prompt param defaults and then overriding
  * with the evaluated step arguments, then renders the template.
  */
-export const promptRenderExecutor: Executor = {
+export const promptRenderExecutor: Executor<PromptRenderStepIR> = {
   operation: "prompt.render",
 
-  execute(step: StepIR, ctx: ExecutorContext): ExecutorResult {
-    const s = step as PromptRenderStepIR;
-
-    const vars: Record<string, import("../../stdlib/types").LoomScalar> = {};
+  execute(step: PromptRenderStepIR, ctx: ExecutorContext): ExecutorResult {
+    const vars: Record<string, LoomScalar> = {};
 
     // Apply declared defaults first
-    for (const p of s.promptParams) {
+    for (const p of step.promptParams) {
       if (p.default !== null) {
         vars[p.name] = p.default;
       }
     }
 
     // Override with evaluated arguments
-    for (const [key, expr] of Object.entries(s.arguments)) {
+    for (const [key, expr] of Object.entries(step.arguments)) {
       vars[key] = ctx.evalExpr(expr);
     }
 
-    const rendered = renderTemplate(s.template, vars);
+    const rendered = renderTemplate(step.template, vars);
     return { output: rendered };
   },
 };

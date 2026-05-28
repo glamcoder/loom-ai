@@ -107,6 +107,7 @@ describe("canonical compile: PrepareRefactor", () => {
 
   it("outputs[0].name is agent_instructions with type Markdown", () => {
     expect(ir.outputs).toHaveLength(1);
+    expect(ir.outputs[0].operation).toBe("artifact.emit");
     expect(ir.outputs[0].name).toBe("agent_instructions");
     expect(ir.outputs[0].type).toBe("Markdown");
     expect(ir.outputs[0].from).toEqual({

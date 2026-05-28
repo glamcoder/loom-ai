@@ -5,7 +5,7 @@ import { fsWriteExecutor } from "../../src/runtime/executors/fs-write";
 import { artifactEmitExecutor } from "../../src/runtime/executors/artifact-emit";
 import { MemoryFileSystem } from "../../src/runtime/filesystem";
 import type { ExecutorContext } from "../../src/runtime/executor-registry";
-import type { StepIR, PromptRenderStepIR, FsWriteStepIR, OutputIR } from "../../src/ir/program-ir";
+import type { PromptRenderStepIR, FsWriteStepIR, OutputIR } from "../../src/ir/program-ir";
 import type { WrittenFile } from "../../src/runtime/types";
 
 // ---------------------------------------------------------------------------
@@ -108,7 +108,7 @@ describe("promptRenderExecutor: dispatches prompt.render", () => {
     step.arguments = { name: { kind: "literal", value: "World" } };
 
     const ctx = makeCtx();
-    const result = promptRenderExecutor.execute(step as StepIR, ctx);
+    const result = promptRenderExecutor.execute(step, ctx);
     expect(result.output).toBe("Hello World!");
     expect(result.path).toBeUndefined();
   });
@@ -120,7 +120,7 @@ describe("promptRenderExecutor: dispatches prompt.render", () => {
     step.arguments = {};
 
     const ctx = makeCtx();
-    const result = promptRenderExecutor.execute(step as StepIR, ctx);
+    const result = promptRenderExecutor.execute(step, ctx);
     expect(result.output).toBe("Hello Default!");
   });
 });
@@ -134,7 +134,7 @@ describe("fsWriteExecutor: dispatches fs.write", () => {
     const step = makeFsWriteStep("output/file.txt", "hello content");
     const ctx = makeCtx();
 
-    const result = fsWriteExecutor.execute(step as StepIR, ctx);
+    const result = fsWriteExecutor.execute(step, ctx);
 
     expect(result.output).toBe("output/file.txt");
     expect(result.path).toBe("output/file.txt");
@@ -155,10 +155,7 @@ describe("artifactEmitExecutor: dispatches artifact.emit", () => {
     const output = makeOutputIR();
     const ctx = makeCtx();
 
-    const result = artifactEmitExecutor.execute(
-      output as unknown as StepIR,
-      ctx,
-    );
+    const result = artifactEmitExecutor.execute(output, ctx);
 
     expect(result.output).toBe("the artifact value");
     expect(result.path).toBeUndefined();

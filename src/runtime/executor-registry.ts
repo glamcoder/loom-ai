@@ -1,6 +1,14 @@
-import type { StepIR, IRExpr } from "../ir/program-ir";
+import type { StepIR, OutputIR, IRExpr } from "../ir/program-ir";
 import type { LoomScalar } from "../stdlib/types";
 import type { LoomFileSystem, WrittenFile } from "./types";
+
+/**
+ * The IR nodes the runtime dispatches through the registry. Steps are the
+ * explicit `step` blocks; outputs are `output` blocks compiled to
+ * `operation: "artifact.emit"`. Both carry a discriminating `operation` field,
+ * so an executor can be typed to exactly the node shape it handles.
+ */
+export type ExecutableIR = StepIR | OutputIR;
 
 /**
  * Context passed to every executor during a program run.
@@ -39,12 +47,14 @@ export interface ExecutorResult {
  * An executor implements the behavior of one v0 operation.
  *
  * Executors are registered in the ExecutorRegistry and invoked by the runtime
- * during `runProgram`. Each executor receives the full StepIR (which carries
- * both the typed fields and the `arguments` map) along with an ExecutorContext.
+ * during `runProgram`. `TNode` narrows the node type the executor handles
+ * (e.g. `FsWriteStepIR`, `OutputIR`) so the implementation needs no casts.
+ * `execute` is a method, so the registry can store executors of different
+ * `TNode` under the common `Executor` type without unsafe casts.
  */
-export interface Executor {
+export interface Executor<TNode extends ExecutableIR = ExecutableIR> {
   readonly operation: string;
-  execute(step: StepIR, ctx: ExecutorContext): ExecutorResult;
+  execute(node: TNode, ctx: ExecutorContext): ExecutorResult;
 }
 
 /**

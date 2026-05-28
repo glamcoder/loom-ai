@@ -281,13 +281,8 @@ export function runProgram(ir: ProgramIR, options?: RunOptions): RunResult {
   const artifactExecutor = registry.get("artifact.emit")!;
 
   for (const outputDef of ir.outputs) {
-    // OutputIR is not a StepIR, but the artifact-emit executor only uses
-    // `output.from` which is an IRExpr — the cast is intentional and
-    // documented in artifact-emit.ts.
-    const result = artifactExecutor.execute(
-      outputDef as unknown as import("../ir/program-ir").StepIR,
-      ctx,
-    );
+    // outputDef is an OutputIR, which is part of ExecutableIR — no cast needed.
+    const result = artifactExecutor.execute(outputDef, ctx);
     const value = String(result.output);
     outputs[outputDef.name] = value;
     traceOutputs.push({ name: outputDef.name, type: outputDef.type, value });
