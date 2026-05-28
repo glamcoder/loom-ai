@@ -494,13 +494,86 @@ describe("syntax error cases", () => {
   });
 
   it("throws LoomError for missing module block entirely", () => {
-    expect(() => parse(`import "./foo.loom" as foo`)).toThrow(LoomError);
+    // A file with no top-level forms at all has no module block.
+    expect(() => parse(``)).toThrow(LoomError);
     try {
-      parse(`import "./foo.loom" as foo`);
+      parse(``);
     } catch (e) {
       expect(e).toBeInstanceOf(LoomError);
       const err = e as LoomError;
       expect(err.diagnostics[0].code).toBe("LOOM_PARSE_MISSING_MODULE");
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Top-level ordering (v0: module first, then imports, then defs/tests)
+// ---------------------------------------------------------------------------
+
+describe("parseModule: top-level ordering", () => {
+  function expectCode(source: string, code: string): void {
+    try {
+      parse(source);
+      throw new Error(`expected parse to throw ${code}`);
+    } catch (e) {
+      expect(e).toBeInstanceOf(LoomError);
+      expect((e as LoomError).diagnostics[0].code).toBe(code);
+    }
+  }
+
+  it("accepts canonical ordering: module, imports, definitions, tests", () => {
+    const source = `
+module "wf" { version = "0.1.0" }
+
+import "./prompts/p.loom" as p
+
+export program "Prog" {
+  param "x" { type = Text required = true }
+  output "out" { type = Text from = param.x }
+}
+
+test "t" {
+  program = Prog
+  with = { x = "hi" }
+  expect {
+    output "out" contains "hi"
+  }
+}
+`;
+    const ast = parse(source);
+    expect(ast.module.name).toBe("wf");
+    expect(ast.imports).toHaveLength(1);
+    expect(ast.definitions).toHaveLength(1);
+    expect(ast.tests).toHaveLength(1);
+  });
+
+  it("fails when an import appears before the module block", () => {
+    expectCode(`import "./p.loom" as p\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+  });
+
+  it("fails when a prompt appears before the module block", () => {
+    expectCode(`prompt "P" { template = "x" }\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+  });
+
+  it("fails when a program appears before the module block", () => {
+    expectCode(`program "P" { }\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+  });
+
+  it("fails when a test appears before the module block", () => {
+    expectCode(`test "t" { program = P }\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+  });
+
+  it("fails when an import appears after a prompt/program definition", () => {
+    const source = `module "wf" { version = "1" }\nprompt "P" { template = "x" }\nimport "./p.loom" as p`;
+    expectCode(source, "LOOM_PARSE_IMPORT_AFTER_DEFINITION");
+  });
+
+  it("fails when an import appears after a test block", () => {
+    const source = `module "wf" { version = "1" }\ntest "t" { program = P }\nimport "./p.loom" as p`;
+    expectCode(source, "LOOM_PARSE_IMPORT_AFTER_DEFINITION");
+  });
+
+  it("still fails for multiple module blocks", () => {
+    expectCode(`module "a" { version = "1" } module "b" { version = "2" }`, "LOOM_PARSE_MULTIPLE_MODULE_BLOCKS");
   });
 });

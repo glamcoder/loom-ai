@@ -96,9 +96,16 @@ class Parser {
     const definitions: Definition[] = [];
     const tests: TestBlock[] = [];
 
+    // v0 requires a strict top-level ordering: a single `module` block first,
+    // then any `import` declarations, then prompt/program/test blocks. We track
+    // whether a definition or test has been seen so a later `import` is rejected.
+    const TOP_LEVEL_KEYWORDS = ["import", "export", "prompt", "program", "test"];
+    let seenDefinitionOrTest = false;
+
     while (!this.eof()) {
       const tok = this.peek();
 
+      // The `module` block: must be unique and first.
       if (tok.kind === "Identifier" && tok.value === "module") {
         if (moduleBlock !== null) {
           throw LoomError.single(
@@ -109,23 +116,54 @@ class Parser {
           );
         }
         moduleBlock = this.parseModuleBlock();
-      } else if (tok.kind === "Identifier" && tok.value === "import") {
-        imports.push(this.parseImport());
-      } else if (tok.kind === "Identifier" && tok.value === "export") {
-        definitions.push(this.parseDefinition(true));
-      } else if (tok.kind === "Identifier" && tok.value === "prompt") {
-        definitions.push(this.parseDefinition(false));
-      } else if (tok.kind === "Identifier" && tok.value === "program") {
-        definitions.push(this.parseDefinition(false));
-      } else if (tok.kind === "Identifier" && tok.value === "test") {
-        tests.push(this.parseTestBlock());
-      } else {
+        continue;
+      }
+
+      // Anything that is not a recognized top-level keyword is a hard parse error.
+      const isTopLevelKeyword =
+        tok.kind === "Identifier" && TOP_LEVEL_KEYWORDS.includes(tok.value);
+      if (!isTopLevelKeyword) {
         throw LoomError.single(
           "parse",
           "LOOM_PARSE_UNEXPECTED_TOKEN",
           `Unexpected token ${JSON.stringify(tok.value)} at top level`,
           tok.span,
         );
+      }
+
+      // A recognized top-level form appeared before the module block.
+      if (moduleBlock === null) {
+        throw LoomError.single(
+          "parse",
+          "LOOM_PARSE_MODULE_NOT_FIRST",
+          `The module block must be the first top-level form (found ${JSON.stringify(tok.value)} first)`,
+          tok.span,
+        );
+      }
+
+      if (tok.value === "import") {
+        if (seenDefinitionOrTest) {
+          throw LoomError.single(
+            "parse",
+            "LOOM_PARSE_IMPORT_AFTER_DEFINITION",
+            "import declarations must appear before prompt, program, and test blocks",
+            tok.span,
+          );
+        }
+        imports.push(this.parseImport());
+      } else if (tok.value === "export") {
+        definitions.push(this.parseDefinition(true));
+        seenDefinitionOrTest = true;
+      } else if (tok.value === "prompt") {
+        definitions.push(this.parseDefinition(false));
+        seenDefinitionOrTest = true;
+      } else if (tok.value === "program") {
+        definitions.push(this.parseDefinition(false));
+        seenDefinitionOrTest = true;
+      } else {
+        // tok.value === "test"
+        tests.push(this.parseTestBlock());
+        seenDefinitionOrTest = true;
       }
     }
 
