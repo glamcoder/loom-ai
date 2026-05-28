@@ -114,6 +114,12 @@ program
 
       console.log(`Trace: ${traceFile}`);
     } catch (err) {
+      // If the runtime attached a trace path to the error, surface it before
+      // delegating to the standard error handler (which sets a nonzero exit).
+      const tracePath = (err as Record<string, unknown>)?.tracePath;
+      if (typeof tracePath === "string") {
+        console.log(`Trace: ${tracePath}`);
+      }
       handleError(err);
     }
   });

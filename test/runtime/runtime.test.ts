@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
+import { mkdtempSync, existsSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { compileProgram } from "../../src/compiler/compiler";
 import { runProgram } from "../../src/runtime/runtime";
 import { MemoryFileSystem } from "../../src/runtime/filesystem";
@@ -232,5 +234,315 @@ describe("runtime: unsupported reserved operation", () => {
     expect(thrown).toBeInstanceOf(LoomError);
     const loomErr = thrown as LoomError;
     expect(loomErr.diagnostics[0].code).toBe("LOOM_RUNTIME_UNSUPPORTED_OPERATION");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Unknown operation (defense-in-depth)
+// ---------------------------------------------------------------------------
+
+describe("runtime: unknown operation", () => {
+  it("throws LoomError LOOM_RUNTIME_UNKNOWN_OPERATION for a completely unknown operation", () => {
+    const fs = new MemoryFileSystem();
+
+    const ir: ProgramIR = {
+      formatVersion: IR_FORMAT_VERSION,
+      source: { file: "/fake/test.loom" },
+      module: "test",
+      moduleVersion: null,
+      program: "TestProg",
+      params: [],
+      inputs: {},
+      effects: [],
+      imports: [],
+      steps: [
+        {
+          id: "mystery_step",
+          operation: "totally.unknown",
+          arguments: {},
+        } as unknown as StepIR,
+      ],
+      outputs: [],
+    };
+
+    let thrown: unknown;
+    try {
+      runProgram(ir, { fs, noTrace: true });
+    } catch (err) {
+      thrown = err;
+    }
+
+    expect(thrown).toBeInstanceOf(LoomError);
+    const loomErr = thrown as LoomError;
+    expect(loomErr.diagnostics[0].code).toBe("LOOM_RUNTIME_UNKNOWN_OPERATION");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Artifact emission in IR and trace
+// ---------------------------------------------------------------------------
+
+describe("runtime: artifact.emit via registry", () => {
+  it("artifact value appears in result.outputs", () => {
+    const fs = new MemoryFileSystem();
+    const ir = compileProgram(
+      join(fileURLToPath(new URL("../../examples", import.meta.url)), "refactor.loom"),
+      "PrepareRefactor",
+      { method: "myMethod", file: "src/foo.ts" },
+    );
+    const result = runProgram(ir, {
+      fs,
+      noTrace: true,
+      now: () => new Date("2024-01-15T12:00:00.000Z"),
+      makeRunId: () => "artifact-test-run",
+      command: "test",
+    });
+
+    expect(result.outputs["agent_instructions"]).toBeDefined();
+    expect(typeof result.outputs["agent_instructions"]).toBe("string");
+  });
+
+  it("artifact emission populates trace.outputs (not trace.steps)", () => {
+    const fs = new MemoryFileSystem();
+    const ir = compileProgram(
+      join(fileURLToPath(new URL("../../examples", import.meta.url)), "refactor.loom"),
+      "PrepareRefactor",
+      { method: "myMethod", file: "src/foo.ts" },
+    );
+    const result = runProgram(ir, {
+      fs,
+      noTrace: true,
+      now: () => new Date("2024-01-15T12:00:00.000Z"),
+      makeRunId: () => "artifact-trace-test",
+      command: "test",
+    });
+
+    // trace.steps must only contain prompt.render + fs.write (not artifact.emit)
+    expect(result.trace.steps).toHaveLength(2);
+    expect(result.trace.steps.every((s) => s.operation !== "artifact.emit")).toBe(true);
+
+    // trace.outputs must contain the emitted artifact
+    expect(result.trace.outputs).toHaveLength(1);
+    expect(result.trace.outputs[0].name).toBe("agent_instructions");
+    expect(result.trace.outputs[0].type).toBe("Markdown");
+    expect(typeof result.trace.outputs[0].value).toBe("string");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Failure traces written to disk
+// ---------------------------------------------------------------------------
+
+describe("runtime: failed run writes trace.json", () => {
+  it("writes trace.json on step failure and still throws", () => {
+    const tmpLoom = join(mkdtempSync(join(tmpdir(), "loom-test-")), ".loom");
+    const memfs = new MemoryFileSystem();
+
+    // Build an IR where a fs.write step references a step output that does
+    // not exist — this will throw LOOM_RUNTIME_MISSING_STEP_OUTPUT.
+    const ir: ProgramIR = {
+      formatVersion: IR_FORMAT_VERSION,
+      source: { file: "/fake/fail.loom" },
+      module: "test.fail",
+      moduleVersion: null,
+      program: "FailProg",
+      params: [],
+      inputs: {},
+      effects: [],
+      imports: [],
+      steps: [
+        // First step succeeds
+        {
+          id: "render_step",
+          operation: "prompt.render",
+          arguments: {},
+          prompt: { alias: null, module: "test", name: "tpl" },
+          template: "fixed output",
+          promptParams: [],
+        } as unknown as StepIR,
+        // Second step fails: references a missing step output
+        {
+          id: "write_step",
+          operation: "fs.write",
+          arguments: {
+            path: { kind: "literal", value: "out/file.txt" },
+            content: { kind: "stepRef", step: "nonexistent_step", field: "output" },
+          },
+        } as unknown as StepIR,
+      ],
+      outputs: [],
+    };
+
+    let thrown: unknown;
+    try {
+      runProgram(ir, {
+        fs: memfs,
+        loomDir: tmpLoom,
+        noTrace: false,
+        now: () => new Date("2024-06-01T00:00:00.000Z"),
+        makeRunId: () => "fail-trace-run",
+        command: "run",
+      });
+    } catch (err) {
+      thrown = err;
+    }
+
+    // Must still throw
+    expect(thrown).toBeDefined();
+    expect(thrown).toBeInstanceOf(LoomError);
+
+    // Trace file must exist on disk
+    const tracePath = join(tmpLoom, "runs", "fail-trace-run", "trace.json");
+    expect(existsSync(tracePath)).toBe(true);
+
+    const traceJson = JSON.parse(readFileSync(tracePath, "utf-8")) as {
+      steps: Array<{ id: string; status: string; error?: string }>;
+      filesWritten: string[];
+      outputs: unknown[];
+    };
+
+    // First step succeeded
+    expect(traceJson.steps[0].id).toBe("render_step");
+    expect(traceJson.steps[0].status).toBe("ok");
+
+    // Second step failed
+    expect(traceJson.steps[1].id).toBe("write_step");
+    expect(traceJson.steps[1].status).toBe("error");
+    expect(typeof traceJson.steps[1].error).toBe("string");
+
+    // No files written before failure
+    expect(traceJson.filesWritten).toEqual([]);
+    // No outputs emitted (we never reached the output phase)
+    expect(traceJson.outputs).toEqual([]);
+  });
+
+  it("attaches tracePath to the thrown error", () => {
+    const tmpLoom = join(mkdtempSync(join(tmpdir(), "loom-test-")), ".loom");
+    const memfs = new MemoryFileSystem();
+
+    const ir: ProgramIR = {
+      formatVersion: IR_FORMAT_VERSION,
+      source: { file: "/fake/fail.loom" },
+      module: "test.fail",
+      moduleVersion: null,
+      program: "FailProg",
+      params: [],
+      inputs: {},
+      effects: [],
+      imports: [],
+      steps: [
+        {
+          id: "bad_step",
+          operation: "llm.complete",
+          arguments: {},
+        } as unknown as StepIR,
+      ],
+      outputs: [],
+    };
+
+    let thrown: unknown;
+    try {
+      runProgram(ir, {
+        fs: memfs,
+        loomDir: tmpLoom,
+        noTrace: false,
+        now: () => new Date("2024-06-01T00:00:00.000Z"),
+        makeRunId: () => "tracepath-test-run",
+        command: "run",
+      });
+    } catch (err) {
+      thrown = err;
+    }
+
+    expect(thrown).toBeInstanceOf(LoomError);
+    const tp = (thrown as LoomError & { tracePath?: string }).tracePath;
+    expect(typeof tp).toBe("string");
+    expect(tp).toContain("tracepath-test-run");
+    expect(tp).toContain("trace.json");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// noTrace: loom test must never write trace files
+// ---------------------------------------------------------------------------
+
+describe("runtime: noTrace prevents disk writes on failure", () => {
+  it("does not write trace.json when noTrace is true, even on failure", () => {
+    const tmpLoom = join(mkdtempSync(join(tmpdir(), "loom-test-")), ".loom");
+    const memfs = new MemoryFileSystem();
+
+    const ir: ProgramIR = {
+      formatVersion: IR_FORMAT_VERSION,
+      source: { file: "/fake/test.loom" },
+      module: "test",
+      moduleVersion: null,
+      program: "TestProg",
+      params: [],
+      inputs: {},
+      effects: [],
+      imports: [],
+      steps: [
+        {
+          id: "fail_step",
+          operation: "llm.complete",
+          arguments: {},
+        } as unknown as StepIR,
+      ],
+      outputs: [],
+    };
+
+    try {
+      runProgram(ir, {
+        fs: memfs,
+        loomDir: tmpLoom,
+        noTrace: true,
+        now: () => new Date("2024-06-01T00:00:00.000Z"),
+        makeRunId: () => "no-trace-run",
+        command: "test",
+      });
+    } catch {
+      // expected
+    }
+
+    // The .loom directory must not have been created at all
+    const tracePath = join(tmpLoom, "runs", "no-trace-run", "trace.json");
+    expect(existsSync(tracePath)).toBe(false);
+
+    // tracePath on the error should be undefined
+  });
+
+  it("tracePath on the thrown error is undefined when noTrace is true", () => {
+    const memfs = new MemoryFileSystem();
+
+    const ir: ProgramIR = {
+      formatVersion: IR_FORMAT_VERSION,
+      source: { file: "/fake/test.loom" },
+      module: "test",
+      moduleVersion: null,
+      program: "TestProg",
+      params: [],
+      inputs: {},
+      effects: [],
+      imports: [],
+      steps: [
+        {
+          id: "fail_step",
+          operation: "llm.complete",
+          arguments: {},
+        } as unknown as StepIR,
+      ],
+      outputs: [],
+    };
+
+    let thrown: unknown;
+    try {
+      runProgram(ir, { fs: memfs, noTrace: true });
+    } catch (err) {
+      thrown = err;
+    }
+
+    expect(thrown).toBeInstanceOf(LoomError);
+    const tp = (thrown as LoomError & { tracePath?: string }).tracePath;
+    expect(tp).toBeUndefined();
   });
 });

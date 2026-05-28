@@ -2,10 +2,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { posix } from "node:path";
 import { LoomError } from "../language/diagnostics";
-import type { IRExpr, ProgramIR, PromptRenderStepIR, FsWriteStepIR } from "../ir/program-ir";
+import type { IRExpr, ProgramIR } from "../ir/program-ir";
 import { isReservedOperation } from "../ir/operations";
-import { renderTemplate } from "../templating/renderer";
 import { NodeFileSystem } from "./filesystem";
+import { ExecutorRegistry } from "./executor-registry";
+import { promptRenderExecutor } from "./executors/prompt-render";
+import { fsWriteExecutor } from "./executors/fs-write";
+import { artifactEmitExecutor } from "./executors/artifact-emit";
 import type {
   LoomFileSystem,
   RunOptions,
@@ -85,46 +88,6 @@ function evalExpr(expr: IRExpr, scope: ProgramScope): LoomScalar {
 }
 
 // ---------------------------------------------------------------------------
-// Executors
-// ---------------------------------------------------------------------------
-
-function executePromptRender(step: PromptRenderStepIR, scope: ProgramScope): string {
-  // Build the variable map: promptParams defaults overridden by evaluated args
-  const vars: Record<string, LoomScalar> = {};
-
-  // Apply declared defaults first
-  for (const p of step.promptParams) {
-    if (p.default !== null) {
-      vars[p.name] = p.default;
-    }
-  }
-
-  // Override with evaluated arguments
-  for (const [key, expr] of Object.entries(step.arguments)) {
-    vars[key] = evalExpr(expr, scope);
-  }
-
-  return renderTemplate(step.template, vars);
-}
-
-function executeFsWrite(
-  step: FsWriteStepIR,
-  scope: ProgramScope,
-  fs: LoomFileSystem,
-  filesWritten: WrittenFile[],
-): string {
-  const path = String(evalExpr(step.arguments["path"], scope));
-  const content = String(evalExpr(step.arguments["content"], scope));
-
-  const dir = posix.dirname(path);
-  fs.mkdirp(dir);
-  fs.writeFile(path, content);
-  filesWritten.push({ path, content });
-
-  return path;
-}
-
-// ---------------------------------------------------------------------------
 // Default run-id / timestamp factories
 // ---------------------------------------------------------------------------
 
@@ -132,6 +95,30 @@ function defaultMakeRunId(): string {
   const now = Date.now();
   const rand = Math.random().toString(36).slice(2, 8);
   return `${now}-${rand}`;
+}
+
+// ---------------------------------------------------------------------------
+// Trace writer — always uses the real Node fs regardless of options.fs
+// ---------------------------------------------------------------------------
+
+function writeTrace(loomDir: string, runId: string, trace: Trace): string {
+  const traceDir = join(loomDir, "runs", runId);
+  mkdirSync(traceDir, { recursive: true });
+  const tracePath = join(traceDir, "trace.json");
+  writeFileSync(tracePath, JSON.stringify(trace, null, 2), "utf-8");
+  return tracePath;
+}
+
+// ---------------------------------------------------------------------------
+// Build the executor registry with all v0 executors
+// ---------------------------------------------------------------------------
+
+function buildRegistry(): ExecutorRegistry {
+  const registry = new ExecutorRegistry();
+  registry.register(promptRenderExecutor);
+  registry.register(fsWriteExecutor);
+  registry.register(artifactEmitExecutor);
+  return registry;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,6 +131,7 @@ export function runProgram(ir: ProgramIR, options?: RunOptions): RunResult {
   const makeRunId: () => string = options?.makeRunId ?? defaultMakeRunId;
   const command = options?.command ?? "run";
   const loomDir = options?.loomDir ?? join(process.cwd(), ".loom");
+  const noTrace = options?.noTrace ?? false;
 
   const runId = makeRunId();
   const timestamp = now().toISOString();
@@ -156,82 +144,163 @@ export function runProgram(ir: ProgramIR, options?: RunOptions): RunResult {
   const traceSteps: TraceStep[] = [];
   const filesWritten: WrittenFile[] = [];
 
-  // Execute steps
-  for (const rawStep of ir.steps) {
-    // Widen to a base shape so TypeScript doesn't narrow away the else branches.
-    const step = rawStep as { id: string; operation: string; arguments: Record<string, IRExpr> };
-    let traceStep: TraceStep;
+  const registry = buildRegistry();
 
-    try {
-      if (step.operation === "prompt.render") {
-        const output = executePromptRender(rawStep as PromptRenderStepIR, scope);
-        scope.stepOutputs.set(step.id, output);
-        traceStep = { id: step.id, operation: step.operation, status: "ok", output };
-      } else if (step.operation === "fs.write") {
-        const path = executeFsWrite(rawStep as FsWriteStepIR, scope, fs, filesWritten);
-        scope.stepOutputs.set(step.id, path);
-        traceStep = { id: step.id, operation: step.operation, status: "ok", path };
-      } else if (isReservedOperation(step.operation)) {
-        throw LoomError.single(
-          "runtime",
-          "LOOM_RUNTIME_UNSUPPORTED_OPERATION",
-          `Operation "${step.operation}" is not supported in v0 — it is reserved for a future version`,
-        );
-      } else {
-        throw LoomError.single(
-          "runtime",
-          "LOOM_RUNTIME_UNKNOWN_OPERATION",
-          `Unknown operation "${step.operation}"`,
-        );
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      traceStep = { id: step.id, operation: step.operation, status: "error", error: message };
-      // Re-throw so callers know the run failed
-      throw err;
-    }
+  // Build a shared ExecutorContext. The scope and filesWritten array are
+  // mutated in-place as steps execute, so the context captures them by
+  // reference correctly.
+  const ctx = {
+    evalExpr: (expr: IRExpr) => evalExpr(expr, scope),
+    fs,
+    recordWrittenFile: (file: WrittenFile) => {
+      filesWritten.push(file);
+    },
+  };
 
-    traceSteps.push(traceStep);
-  }
-
-  // Emit outputs
-  const outputs: Record<string, string> = {};
-  const traceOutputs: TraceOutput[] = [];
-
-  for (const outputDef of ir.outputs) {
-    const value = String(evalExpr(outputDef.from, scope));
-    outputs[outputDef.name] = value;
-    traceOutputs.push({ name: outputDef.name, type: outputDef.type, value });
-  }
-
-  // Build trace imports
+  // Build trace imports (needed for both success and failure traces)
   const traceImports: TraceImport[] = ir.imports.map((imp) => ({
     alias: imp.alias,
     module: imp.module,
     path: imp.path,
   }));
 
-  const trace: Trace = {
-    runId,
-    timestamp,
-    command,
-    file: ir.source.file,
-    module: ir.module,
-    program: ir.program,
-    params: ir.inputs,
-    imports: traceImports,
-    effects: ir.effects,
-    steps: traceSteps,
-    filesWritten: filesWritten.map((f) => f.path),
-    outputs: traceOutputs,
-    diagnostics: [],
-  };
+  // Helper that assembles a Trace from the current accumulated state.
+  // Used for both success and failure paths.
+  function buildTrace(
+    steps: TraceStep[],
+    outputs: TraceOutput[],
+    diagnostics: import("../language/diagnostics").Diagnostic[],
+  ): Trace {
+    return {
+      runId,
+      timestamp,
+      command,
+      file: ir.source.file,
+      module: ir.module,
+      program: ir.program,
+      params: ir.inputs,
+      imports: traceImports,
+      effects: ir.effects,
+      steps,
+      filesWritten: filesWritten.map((f) => f.path),
+      outputs,
+      diagnostics,
+    };
+  }
 
-  // Write trace to disk (always real FS, even when options.fs is in-memory)
-  if (!options?.noTrace) {
-    const traceDir = join(loomDir, "runs", runId);
-    mkdirSync(traceDir, { recursive: true });
-    writeFileSync(join(traceDir, "trace.json"), JSON.stringify(trace, null, 2), "utf-8");
+  // ---------------------------------------------------------------------------
+  // Execute steps through the registry
+  // ---------------------------------------------------------------------------
+
+  for (const step of ir.steps) {
+    let traceStep: TraceStep;
+
+    try {
+      const executor = registry.get(step.operation);
+
+      if (!executor) {
+        // Dispatch fallback: reserved operations get a specific code; truly
+        // unknown operations get a different code. This mirrors the behavior
+        // that existed before the registry and is asserted by existing tests.
+        if (isReservedOperation(step.operation)) {
+          throw LoomError.single(
+            "runtime",
+            "LOOM_RUNTIME_UNSUPPORTED_OPERATION",
+            `Operation "${step.operation}" is not supported in v0 — it is reserved for a future version`,
+          );
+        } else {
+          throw LoomError.single(
+            "runtime",
+            "LOOM_RUNTIME_UNKNOWN_OPERATION",
+            `Unknown operation "${step.operation}"`,
+          );
+        }
+      }
+
+      const result = executor.execute(step, ctx);
+      scope.stepOutputs.set(step.id, result.output);
+
+      traceStep = {
+        id: step.id,
+        operation: step.operation,
+        status: "ok",
+        ...(result.output !== undefined &&
+          step.operation === "prompt.render" && { output: String(result.output) }),
+        ...(result.path !== undefined && { path: result.path }),
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      traceStep = { id: step.id, operation: step.operation, status: "error", error: message };
+
+      // Assemble a failure trace with all successful steps so far plus the
+      // failed step. Partial outputs are empty because we never reached the
+      // output-emission phase.
+      const failureDiagnostics =
+        err instanceof LoomError ? err.diagnostics : [];
+
+      const failureTrace = buildTrace(
+        [...traceSteps, traceStep],
+        [], // no outputs emitted yet
+        failureDiagnostics,
+      );
+
+      // Write failure trace to disk unless noTrace is set (e.g. test runner).
+      let tracePath: string | undefined;
+      if (!noTrace) {
+        tracePath = writeTrace(loomDir, runId, failureTrace);
+      }
+
+      // Rethrow, attaching the trace path so the CLI can surface it.
+      if (err instanceof LoomError) {
+        // Attach tracePath as an own property on the existing LoomError so
+        // the CLI can read it without losing the diagnostics structure.
+        (err as LoomError & { tracePath?: string }).tracePath = tracePath;
+        throw err;
+      } else {
+        // Wrap non-LoomError failures so callers always get a consistent type.
+        const wrapped = LoomError.single(
+          "runtime",
+          "LOOM_RUNTIME_STEP_FAILED",
+          message,
+        );
+        (wrapped as LoomError & { tracePath?: string }).tracePath = tracePath;
+        throw wrapped;
+      }
+    }
+
+    traceSteps.push(traceStep);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Emit outputs via the artifact-emit executor
+  // ---------------------------------------------------------------------------
+
+  const outputs: Record<string, string> = {};
+  const traceOutputs: TraceOutput[] = [];
+
+  const artifactExecutor = registry.get("artifact.emit")!;
+
+  for (const outputDef of ir.outputs) {
+    // OutputIR is not a StepIR, but the artifact-emit executor only uses
+    // `output.from` which is an IRExpr — the cast is intentional and
+    // documented in artifact-emit.ts.
+    const result = artifactExecutor.execute(
+      outputDef as unknown as import("../ir/program-ir").StepIR,
+      ctx,
+    );
+    const value = String(result.output);
+    outputs[outputDef.name] = value;
+    traceOutputs.push({ name: outputDef.name, type: outputDef.type, value });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Assemble success trace and write it
+  // ---------------------------------------------------------------------------
+
+  const trace = buildTrace(traceSteps, traceOutputs, []);
+
+  if (!noTrace) {
+    writeTrace(loomDir, runId, trace);
   }
 
   return {
