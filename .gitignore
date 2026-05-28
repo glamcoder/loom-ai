@@ -1,6 +1,9 @@
 # MacOS system files
 .DS_Store
 
+# Loom run output (traces, artifacts)
+.loom/
+
 # Logs
 logs
 *.log

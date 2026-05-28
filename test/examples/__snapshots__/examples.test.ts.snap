@@ -1,0 +1,153 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compileProgram: PrepareRefactor > golden IR snapshot (paths normalized to repo-relative) 1`] = `
+{
+  "effects": [
+    "fs.write",
+  ],
+  "formatVersion": 1,
+  "imports": [
+    {
+      "alias": "refactor",
+      "module": "prompts.refactor",
+      "path": "./prompts/refactor.loom",
+      "resolvedFile": "examples/prompts/refactor.loom",
+    },
+  ],
+  "inputs": {
+    "file": "src/billing/costs.ts",
+    "goal": "Improve readability without changing behavior.",
+    "method": "calculateTotalCost",
+  },
+  "module": "workflows.refactor",
+  "moduleVersion": "0.1.0",
+  "outputs": [
+    {
+      "from": {
+        "field": "output",
+        "kind": "stepRef",
+        "step": "render_instructions",
+      },
+      "name": "agent_instructions",
+      "type": "Markdown",
+    },
+  ],
+  "params": [
+    {
+      "default": null,
+      "name": "method",
+      "required": true,
+      "type": "Symbol",
+    },
+    {
+      "default": null,
+      "name": "file",
+      "required": true,
+      "type": "Path",
+    },
+    {
+      "default": "Improve readability without changing behavior.",
+      "name": "goal",
+      "required": false,
+      "type": "Text",
+    },
+  ],
+  "program": "PrepareRefactor",
+  "source": {
+    "file": "examples/refactor.loom",
+  },
+  "steps": [
+    {
+      "arguments": {
+        "file": {
+          "kind": "paramRef",
+          "param": "file",
+        },
+        "goal": {
+          "kind": "paramRef",
+          "param": "goal",
+        },
+        "method": {
+          "kind": "paramRef",
+          "param": "method",
+        },
+      },
+      "id": "render_instructions",
+      "operation": "prompt.render",
+      "prompt": {
+        "alias": "refactor",
+        "module": "prompts.refactor",
+        "name": "RefactorMethod",
+      },
+      "promptParams": [
+        {
+          "default": null,
+          "name": "method",
+          "required": true,
+          "type": "Symbol",
+        },
+        {
+          "default": null,
+          "name": "file",
+          "required": true,
+          "type": "Path",
+        },
+        {
+          "default": "Improve readability without changing behavior.",
+          "name": "goal",
+          "required": false,
+          "type": "Text",
+        },
+      ],
+      "template": "# Refactor method \`{{ method }}\`
+
+You are refactoring \`{{ method }}\` in \`{{ file }}\`.
+
+## Goal
+
+{{ goal }}
+
+## Scope
+
+- Refactor only \`{{ method }}\` and the smallest necessary surrounding code.
+- Preserve external behavior.
+- Preserve the public API.
+- Do not introduce new dependencies.
+- Avoid unrelated formatting changes.
+- Keep the diff small and reviewable.
+- If behavior is unclear, stop and explain the ambiguity.
+",
+    },
+    {
+      "arguments": {
+        "content": {
+          "field": "output",
+          "kind": "stepRef",
+          "step": "render_instructions",
+        },
+        "path": {
+          "kind": "concat",
+          "parts": [
+            {
+              "args": [
+                {
+                  "kind": "paramRef",
+                  "param": "file",
+                },
+              ],
+              "fn": "dirname",
+              "kind": "call",
+            },
+            {
+              "kind": "literal",
+              "value": "/AGENTS.md",
+            },
+          ],
+        },
+      },
+      "id": "write_agent_file",
+      "operation": "fs.write",
+    },
+  ],
+}
+`;

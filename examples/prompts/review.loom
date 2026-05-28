@@ -1,0 +1,41 @@
+module "prompts.review" {
+  version = "0.1.0"
+}
+
+export prompt "ReviewPullRequest" {
+  param "diff" {
+    type = Text
+    required = true
+  }
+
+  param "focus" {
+    type = Text
+    default = "Correctness, readability, and test coverage."
+  }
+
+  returns = Markdown
+
+  template = """
+# Pull Request Review
+
+## Diff
+
+```diff
+{{ diff }}
+```
+
+## Review Focus
+
+{{ focus }}
+
+## Instructions
+
+- Summarize what this change does in one or two sentences.
+- Identify any correctness issues, edge cases, or missing error handling.
+- Note readability concerns: unclear names, missing comments, overly complex logic.
+- Check for missing or inadequate tests.
+- Flag security or performance concerns if present.
+- Keep feedback specific and actionable.
+- If the change looks good, say so clearly.
+"""
+}

@@ -1,0 +1,63 @@
+module "workflows.review" {
+  version = "0.1.0"
+}
+
+import "./prompts/review.loom" as review
+
+export program "PrepareReview" {
+  param "diff" {
+    type = Text
+    required = true
+  }
+
+  param "path" {
+    type = Path
+    required = true
+  }
+
+  param "focus" {
+    type = Text
+    default = "Correctness, readability, and test coverage."
+  }
+
+  effects = ["fs.write"]
+
+  step "render_review" {
+    use = review.ReviewPullRequest
+
+    with = {
+      diff = param.diff
+      focus = param.focus
+    }
+  }
+
+  step "write_review_file" {
+    use = fs.write
+
+    with = {
+      path = dirname(param.path) + "/REVIEW.md"
+      content = step.render_review.output
+    }
+  }
+
+  output "review_instructions" {
+    type = Markdown
+    from = step.render_review.output
+  }
+}
+
+test "prepare_review_renders_review_file" {
+  program = PrepareReview
+
+  with = {
+    diff = "+ added error handling for null input"
+    path = ".github/pull_request_template.md"
+  }
+
+  expect {
+    output "review_instructions" contains "Pull Request Review"
+    output "review_instructions" contains "Correctness, readability, and test coverage."
+    writes file ".github/REVIEW.md"
+    effects = ["fs.write"]
+  }
+}

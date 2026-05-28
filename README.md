@@ -20,6 +20,154 @@ Track what happened with deterministic traces.
 Test workflow outputs like code.
 ```
 
+## Getting started
+
+### Prerequisites
+
+- **Node.js >= 20** (developed and tested on Node 22).
+- **npm** (this repo uses npm; there is no pnpm lockfile).
+
+Loom v0 makes no network calls and bundles no LLM provider SDKs — installing pulls only two small runtime dependencies (`commander`, `zod`).
+
+### Installation
+
+Loom is not yet published to a package registry, so install from source:
+
+```bash
+git clone <this-repo> loom
+cd loom
+npm install      # install dependencies
+npm run build    # bundle to dist/index.js  (bin: loom)
+npm test         # optional: run the deterministic test suite
+```
+
+To put the `loom` command on your `PATH`, link the built CLI:
+
+```bash
+npm link         # registers the `loom` bin globally
+loom --help
+```
+
+Prefer not to install globally? Two options need no build step:
+
+```bash
+# via the npm script (note the -- before loom args)
+npm run loom -- validate examples/refactor.loom
+
+# or directly with tsx
+npx tsx src/cli/index.ts validate examples/refactor.loom
+```
+
+Throughout this guide, `loom` means any of the three forms above.
+
+### Quick start
+
+The repo ships two runnable examples under `examples/`. Here is the full
+`validate → compile → run → test` loop against the refactor workflow.
+
+**1. Validate** the module and its local imports:
+
+```bash
+loom validate examples/refactor.loom
+```
+
+```text
+module: workflows.refactor
+programs: PrepareRefactor
+```
+
+**2. Compile** a program into provider-neutral Program IR (printed as JSON to stdout):
+
+```bash
+loom compile examples/refactor.loom PrepareRefactor \
+  --method calculateTotalCost \
+  --file src/billing/costs.ts
+```
+
+```jsonc
+// abbreviated — run the command to see the full IR
+{
+  "formatVersion": 1,
+  "module": "workflows.refactor",
+  "moduleVersion": "0.1.0",
+  "program": "PrepareRefactor",
+  "params": [
+    /* one entry per declared param */
+  ],
+  "inputs": {
+    "method": "calculateTotalCost",
+    "file": "src/billing/costs.ts",
+    "goal": "Improve readability without changing behavior.", // default applied
+  },
+  "effects": ["fs.write"],
+  "imports": [
+    /* { alias: "refactor", module: "prompts.refactor", ... } */
+  ],
+  "steps": [
+    /* { operation: "prompt.render", template, arguments, ... },
+       { operation: "fs.write", arguments: { path, content } } */
+  ],
+  "outputs": [
+    /* { name: "agent_instructions", type: "Markdown", from } */
+  ],
+}
+```
+
+**3. Run** the program — renders the prompt, writes the artifact, records a trace:
+
+```bash
+loom run examples/refactor.loom PrepareRefactor \
+  --method calculateTotalCost \
+  --file src/billing/costs.ts
+```
+
+```text
+Files written:
+  src/billing/AGENTS.md
+Trace: /abs/path/.loom/runs/<run-id>/trace.json
+```
+
+The output path is derived deterministically from the input —
+`dirname("src/billing/costs.ts") + "/AGENTS.md"` — using POSIX path semantics on
+every OS. Artifacts are written relative to your current working directory, and a
+full execution trace is written under `.loom/runs/<run-id>/trace.json`.
+
+**4. Test** the workflow deterministically — no LLM, no disk writes (the test
+runner executes against an in-memory filesystem):
+
+```bash
+loom test examples/refactor.loom
+```
+
+```text
+PASS  prepare_refactor_renders_agent_file
+
+1 passed, 0 failed
+```
+
+### Passing parameters
+
+Program parameters are passed after the program name as flags; both `--key value`
+and `--key=value` are accepted:
+
+```bash
+loom run examples/refactor.loom PrepareRefactor --method foo --file src/foo.ts
+loom run examples/refactor.loom PrepareRefactor --method=foo --file=src/foo.ts
+```
+
+Required params are enforced and declared defaults are applied automatically.
+Omitting a required param fails with a clear, coded diagnostic and a non-zero
+exit status:
+
+```bash
+loom compile examples/refactor.loom PrepareRefactor --file src/foo.ts
+```
+
+```text
+error[LOOM_COMPILE_MISSING_REQUIRED_PARAM] Required param "method" was not provided and has no default
+  hint: Pass --param method=<value>
+```
+
 ## Why Loom exists
 
 Developers increasingly use coding agents and LLMs through repo-local instruction files, custom prompts, rules, and workflow snippets.
@@ -309,11 +457,25 @@ src/billing/AGENTS.md
 .loom/runs/<run-id>/trace.json
 ```
 
+## A second example: GitHub Copilot-style review instructions
+
+`examples/review.loom` demonstrates a different agent artifact target — a
+Copilot-style `REVIEW.md` written to the same directory as the input path.
+It shows that Loom is agent-agnostic: the same DSL compiles to any file target.
+
+```bash
+loom run examples/review.loom PrepareReview \
+  --diff "$(git diff HEAD~1)" \
+  --path ".github/pull_request_template.md"
+# → .github/REVIEW.md  +  .loom/runs/<run-id>/trace.json
+
+loom test examples/review.loom
+```
+
 ## Deterministic tests
 
-Loom workflows should be testable without calling an LLM.
-
-Example future syntax:
+Loom workflows are testable without calling an LLM. The `test` block syntax is
+implemented in v0:
 
 ```hcl
 test "prepare_refactor_renders_agent_file" {
@@ -339,9 +501,13 @@ Run:
 loom test examples/refactor.loom
 ```
 
-The exact v0 syntax may evolve, but deterministic tests are part of the PMF-oriented direction: AI workflows should be treated as code.
+Deterministic tests are a core part of the v0 value proposition: AI workflows
+should be treated as code, tested like code, and committed to Git.
 
-## Planned CLI
+## CLI reference
+
+All four commands are implemented in v0 (see [Getting started](#getting-started)
+for a worked walkthrough):
 
 ```bash
 loom validate <file>
@@ -356,15 +522,16 @@ Parse and validate a Loom module and its local imports.
 
 ### `loom compile`
 
-Compile a program into provider-neutral Program IR.
+Compile a program into provider-neutral Program IR (prints JSON to stdout).
 
 ### `loom run`
 
-Execute the deterministic v0 runtime.
+Execute the deterministic v0 runtime: renders prompts, writes artifacts, and
+records a `.loom/runs/<run-id>/trace.json`.
 
 ### `loom test`
 
-Run deterministic workflow tests and golden checks.
+Run deterministic workflow tests and golden checks — no LLM calls required.
 
 ## Program IR
 
