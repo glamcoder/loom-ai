@@ -40,15 +40,20 @@ export function isKnownOperation(name: string): boolean {
  * pure and requires no declared effect. Used by the effect checker.
  */
 export const OPERATION_EFFECTS: Record<OperationName, EffectName | null> = {
+  // v0 operations — pure operations declare no effect.
   "prompt.render": null,
+  // artifact.emit records an output artifact in the trace; no external effect.
   "artifact.emit": null,
   "fs.write": "fs.write",
+  // Reserved future operations — effect mapping kept conceptually correct so the
+  // effect checker is already right when these become executable.
   "llm.complete": "llm.complete",
+  // parse.json / validate.schema are pure transforms over in-memory values.
   "parse.json": null,
   "validate.schema": null,
-  "shell.run": null,
-  "human.approve": null,
-  "agent.execute": null,
+  "shell.run": "shell.run",
+  "human.approve": "human.approve",
+  "agent.execute": "agent.execute",
 };
 
 export function effectForOperation(op: OperationName): EffectName | null {

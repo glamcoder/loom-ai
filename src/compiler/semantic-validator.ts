@@ -19,7 +19,7 @@ import type { ModuleGraph, ResolvedModule } from "../modules/module-loader";
 import { resolveImportedDefinition } from "../modules/module-loader";
 import { isKnownOperation, isReservedOperation, effectForOperation } from "../ir/operations";
 import { isLoomType } from "../stdlib/types";
-import { isKnownEffect } from "../stdlib/effects";
+import { isKnownEffect, KNOWN_EFFECTS } from "../stdlib/effects";
 import type { ParamIR, IRExpr, StepIR, OutputIR } from "../ir/program-ir";
 import type { SourceSpan } from "../language/source-location";
 
@@ -515,7 +515,7 @@ export function lowerOutput(
   const ctx: LoweringContext = { paramNames, priorStepIds };
   const from = lowerExpression(fromAttr.value, ctx);
 
-  return { name: output.name, type: typeName, from };
+  return { operation: "artifact.emit", name: output.name, type: typeName, from };
 }
 
 // ---------------------------------------------------------------------------
@@ -553,7 +553,7 @@ export function validateEffects(program: ProgramDefinition, steps: StepIR[]): st
           "LOOM_EFFECT_UNKNOWN",
           `Unknown effect "${effectName}"`,
           el.span,
-          `Known effects: fs.write, llm.complete`,
+          `Known effects: ${KNOWN_EFFECTS.join(", ")}`,
         );
       }
       declaredEffects.push(effectName);

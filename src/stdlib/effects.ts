@@ -11,7 +11,12 @@ export const V0_EFFECTS = ["fs.write"] as const;
 export type V0Effect = (typeof V0_EFFECTS)[number];
 
 /** Recognized-but-not-executable effects (documented future work). */
-export const RESERVED_EFFECTS = ["llm.complete"] as const;
+export const RESERVED_EFFECTS = [
+  "llm.complete",
+  "shell.run",
+  "human.approve",
+  "agent.execute",
+] as const;
 export type ReservedEffect = (typeof RESERVED_EFFECTS)[number];
 
 export type EffectName = V0Effect | ReservedEffect;
@@ -27,3 +32,6 @@ export function isReservedEffect(name: string): name is ReservedEffect {
 export function isKnownEffect(name: string): boolean {
   return isV0Effect(name) || isReservedEffect(name);
 }
+
+/** All recognized effect names (v0 + reserved), for diagnostics. */
+export const KNOWN_EFFECTS: readonly string[] = [...V0_EFFECTS, ...RESERVED_EFFECTS];

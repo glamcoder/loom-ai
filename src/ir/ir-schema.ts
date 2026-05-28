@@ -82,6 +82,7 @@ const fsWriteStepIRSchema = stepIRBaseSchema.extend({
 const stepIRSchema = z.union([promptRenderStepIRSchema, fsWriteStepIRSchema]);
 
 const outputIRSchema = z.object({
+  operation: z.literal("artifact.emit"),
   name: z.string(),
   type: z.string(),
   from: irExprSchema,

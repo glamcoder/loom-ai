@@ -99,8 +99,14 @@ export interface FsWriteStepIR extends StepIRBase {
 
 export type StepIR = PromptRenderStepIR | FsWriteStepIR;
 
-/** An `output "name" { type = ...; from = ... }` block; emitted via artifact.emit. */
+/**
+ * An `output "name" { type = ...; from = ... }` block, compiled to an explicit
+ * `artifact.emit` operation. The public DSL keeps the `output` block form; the
+ * compiler lowers each one to this node so the runtime can dispatch artifact
+ * emission through the executor registry like any other operation.
+ */
 export interface OutputIR {
+  operation: "artifact.emit";
   name: string;
   type: string;
   from: IRExpr;

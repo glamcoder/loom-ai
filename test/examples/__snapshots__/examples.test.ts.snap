@@ -29,6 +29,7 @@ exports[`compileProgram: PrepareRefactor > golden IR snapshot (paths normalized 
         "step": "render_instructions",
       },
       "name": "agent_instructions",
+      "operation": "artifact.emit",
       "type": "Markdown",
     },
   ],
