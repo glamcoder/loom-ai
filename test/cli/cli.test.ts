@@ -50,10 +50,37 @@ describe("CLI: validate", () => {
     expect(stdout).toContain("workflows.refactor");
   });
 
-  it("lists programs in the module", () => {
+  it("lists exported programs", () => {
     const { stdout, status } = runCli(["validate", exampleFile]);
     expect(status).toBe(0);
     expect(stdout).toContain("PrepareRefactor");
+  });
+
+  it("shows imports section with alias -> resolved module name", () => {
+    const { stdout, status } = runCli(["validate", exampleFile]);
+    expect(status).toBe(0);
+    expect(stdout).toContain("imports:");
+    expect(stdout).toContain("refactor -> prompts.refactor");
+  });
+
+  it("shows exported programs section", () => {
+    const { stdout, status } = runCli(["validate", exampleFile]);
+    expect(status).toBe(0);
+    expect(stdout).toContain("exported programs:");
+    expect(stdout).toContain("PrepareRefactor");
+  });
+
+  it("shows private programs section with (none)", () => {
+    const { stdout, status } = runCli(["validate", exampleFile]);
+    expect(status).toBe(0);
+    expect(stdout).toContain("private programs:");
+  });
+
+  it("shows tests section with entry-module test names", () => {
+    const { stdout, status } = runCli(["validate", exampleFile]);
+    expect(status).toBe(0);
+    expect(stdout).toContain("tests:");
+    expect(stdout).toContain("prepare_refactor_renders_agent_file");
   });
 });
 

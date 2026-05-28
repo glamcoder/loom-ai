@@ -73,7 +73,18 @@ loom validate examples/refactor.loom
 
 ```text
 module: workflows.refactor
-programs: PrepareRefactor
+imports:
+  refactor -> prompts.refactor
+exported programs:
+  PrepareRefactor
+private programs:
+  (none)
+exported prompts:
+  (none)
+private prompts:
+  (none)
+tests:
+  prepare_refactor_renders_agent_file
 ```
 
 **2. Compile** a program into provider-neutral Program IR (printed as JSON to stdout):

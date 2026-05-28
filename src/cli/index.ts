@@ -34,26 +34,96 @@ program
       const entry = graph.entry;
       const moduleName = entry.ast.module.name;
 
-      const programs: string[] = [];
-      const prompts: string[] = [];
+      // --- imports ---
+      const importLines: string[] = [];
+      for (const [alias, imp] of entry.importsByAlias.entries()) {
+        const targetMod = graph.modules.get(imp.resolvedFile);
+        const resolvedName = targetMod?.ast.module.name ?? alias;
+        importLines.push(`  ${alias} -> ${resolvedName}`);
+      }
+
+      // --- definitions split by kind and visibility ---
+      const exportedPrograms: string[] = [];
+      const privatePrograms: string[] = [];
+      const exportedPrompts: string[] = [];
+      const privatePrompts: string[] = [];
 
       for (const def of entry.ast.definitions) {
         if (isProgram(def)) {
-          programs.push(def.name);
+          if (def.exported) {
+            exportedPrograms.push(def.name);
+          } else {
+            privatePrograms.push(def.name);
+          }
         } else if (isPrompt(def)) {
-          prompts.push(def.name);
+          if (def.exported) {
+            exportedPrompts.push(def.name);
+          } else {
+            privatePrompts.push(def.name);
+          }
         }
       }
 
+      // --- tests in the entry module ---
+      const testNames: string[] = entry.ast.tests.map((t) => t.name);
+
+      // --- print ---
+      const none = "  (none)";
+
       console.log(`module: ${moduleName}`);
-      if (programs.length > 0) {
-        console.log(`programs: ${programs.join(", ")}`);
+
+      console.log("imports:");
+      if (importLines.length > 0) {
+        for (const line of importLines) {
+          console.log(line);
+        }
+      } else {
+        console.log(none);
       }
-      if (prompts.length > 0) {
-        console.log(`prompts: ${prompts.join(", ")}`);
+
+      console.log("exported programs:");
+      if (exportedPrograms.length > 0) {
+        for (const name of exportedPrograms) {
+          console.log(`  ${name}`);
+        }
+      } else {
+        console.log(none);
       }
-      if (programs.length === 0 && prompts.length === 0) {
-        console.log("(no definitions)");
+
+      console.log("private programs:");
+      if (privatePrograms.length > 0) {
+        for (const name of privatePrograms) {
+          console.log(`  ${name}`);
+        }
+      } else {
+        console.log(none);
+      }
+
+      console.log("exported prompts:");
+      if (exportedPrompts.length > 0) {
+        for (const name of exportedPrompts) {
+          console.log(`  ${name}`);
+        }
+      } else {
+        console.log(none);
+      }
+
+      console.log("private prompts:");
+      if (privatePrompts.length > 0) {
+        for (const name of privatePrompts) {
+          console.log(`  ${name}`);
+        }
+      } else {
+        console.log(none);
+      }
+
+      console.log("tests:");
+      if (testNames.length > 0) {
+        for (const name of testNames) {
+          console.log(`  ${name}`);
+        }
+      } else {
+        console.log(none);
       }
     } catch (err) {
       handleError(err);

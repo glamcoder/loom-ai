@@ -309,6 +309,11 @@ describe("CLI smoke: examples/refactor.loom", () => {
     expect(status).toBe(0);
     expect(stdout).toContain("workflows.refactor");
     expect(stdout).toContain("PrepareRefactor");
+    expect(stdout).toContain("imports:");
+    expect(stdout).toContain("refactor -> prompts.refactor");
+    expect(stdout).toContain("exported programs:");
+    expect(stdout).toContain("tests:");
+    expect(stdout).toContain("prepare_refactor_renders_agent_file");
   });
 
   it("compile exits 0 and returns valid ProgramIR JSON", () => {
