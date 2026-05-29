@@ -105,12 +105,12 @@ export interface LlmProvider {
 
 Rules for provider adapters:
 
-- They live in separate packages, not in the `loom` core package.
+- They live in separate packages, not in the `loom-ai` core package.
 - They are injected into the runtime at startup, not imported statically.
 - The core runtime depends only on the `LlmProvider` interface, not on any concrete SDK.
 - A `MockLlmProvider` will be the first implementation (for testing and v1 development).
 
-This keeps the core installable with zero LLM dependencies, consistent with the v0 guarantee that `npm install loom` pulls only two small runtime dependencies (`commander`, `zod`).
+This keeps the core installable with zero LLM dependencies, consistent with the v0 guarantee that `npm install loom-ai` pulls only two small runtime dependencies (`commander`, `zod`).
 
 ---
 

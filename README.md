@@ -34,8 +34,8 @@ Loom v0 makes no network calls and bundles no LLM provider SDKs — installing p
 Loom is not yet published to a package registry, so install from source:
 
 ```bash
-git clone <this-repo> loom
-cd loom
+git clone <this-repo> loom-ai
+cd loom-ai
 npm install      # install dependencies
 npm run build    # bundle to dist/index.js  (bin: loom)
 npm test         # optional: run the deterministic test suite

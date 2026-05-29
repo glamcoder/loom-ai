@@ -1,5 +1,5 @@
 {
-  "name": "loom",
+  "name": "loom-ai",
   "version": "0.1.0",
   "description": "Loom (working name): a Git-native workflow language for packaging reusable AI work as code. v0 is a deterministic compiler/runtime.",
   "type": "module",
