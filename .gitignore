@@ -148,8 +148,10 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-# Generated agent artifacts (produced by `loom run`)
-src/**/AGENTS.md
-REVIEW.md
+# Generated agent artifacts (produced by `loom run` and the examples).
+# These are example outputs, not source — regenerate them with `loom run`.
+**/AGENTS.md
+**/REVIEW.md
+HELLO.md
 GUIDE.md
 ONBOARDING.md

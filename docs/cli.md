@@ -194,7 +194,7 @@ A failing test prints `FAIL  <name>` followed by the failing assertions, then th
 | --- | --- |
 | Missing required param | `error[LOOM_COMPILE_MISSING_REQUIRED_PARAM] Required param "method" was not provided and has no default` |
 | Undeclared effect | `error[LOOM_EFFECT_UNDECLARED] Step "w" uses effect "fs.write" but the program does not declare it in its effects list` |
-| Non-relative import | `error[LOOM_MODULE_IMPORT_NON_RELATIVE] Import path must be relative (start with "./" or "../"): "lib/foo.loom"` |
+| Non-relative import | `error[LOOM_MODULE_NON_RELATIVE_IMPORT] Import paths must be relative and start with "./" or "../": "lib/foo.loom"` |
 | Import after a definition | `error[LOOM_PARSE_IMPORT_AFTER_DEFINITION] Import statements must appear before definitions and tests` |
 | Unknown template variable | `error[LOOM_RENDER_UNKNOWN_VAR] Unknown template variable "{{ goal }}" — no binding for "goal"` |
 
