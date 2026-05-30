@@ -1,5 +1,7 @@
 # Loom Market Positioning
 
+> Background positioning document; most users should read [docs/comparisons.md](comparisons.md) instead.
+>
 > Note: "Loom" is a working name. There are known naming collisions. The project may adopt a different public name before serious release.
 
 ---

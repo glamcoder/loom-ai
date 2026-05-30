@@ -426,7 +426,7 @@ Rules:
 - `fs.write` requires `effects = ["fs.write"]` on the enclosing program.
 - `prompt.render` and `artifact.emit` are pure — they produce values but do not cause external side effects and do not require an effects declaration.
 - Calling `fs.write` in a step without declaring `fs.write` in `effects` is a compile-time error.
-- The declared effects list must match the set of effect-requiring operations used (over- or under-declaration is an error).
+- A program must declare every effect it uses. Under-declaration (using an effect that is not declared) is a compile-time error (`LOOM_EFFECT_UNDECLARED`), and an unknown effect name is rejected (`LOOM_EFFECT_UNKNOWN`). Declaring an extra *known* effect that the program does not actually use is allowed in v0 but discouraged — keep the effects list to exactly what the program performs.
 - Test assertions may check `effects = [...]` to verify the declared effect set.
 
 Future effect tokens (reserved, not implemented in v0): `llm.complete`, `shell.run`, `human.approve`, `agent.execute`.

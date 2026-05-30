@@ -34,7 +34,7 @@ Commands:
 
 ## 2. Get the examples (optional)
 
-The examples referenced below ship inside the package, but the easiest way to follow along is to clone the repo:
+The `examples/` directory is published inside the npm package, but a global `npm install -g loom-ai` does **not** drop those files into your working directory. The canonical way to follow along is to clone the repo:
 
 ```bash
 git clone https://github.com/glamcoder/loom-ai.git
@@ -43,6 +43,14 @@ npm install
 ```
 
 From source you can run the CLI with `npm run loom -- <command>` (the `--` forwards the rest to the CLI), e.g. `npm run loom -- validate examples/refactor.loom`. If you installed globally, use `loom <command>` directly. The rest of this guide writes `loom`.
+
+If you'd rather not clone, you can extract the examples that ship inside the published tarball:
+
+```bash
+npm pack loom-ai            # writes loom-ai-<version>.tgz
+tar -xf loom-ai-*.tgz       # unpacks into ./package
+cd package                  # examples/ and docs/ are here
+```
 
 ## 3. Validate
 
@@ -231,7 +239,7 @@ Add `effects = ["fs.write"]` to the program. Effects are explicit on purpose.
 ### Non-relative import path
 
 ```
-error[LOOM_MODULE_IMPORT_NON_RELATIVE] foo.loom:5:1: Import path must be relative (start with "./" or "../"): "lib/foo.loom"
+error[LOOM_MODULE_NON_RELATIVE_IMPORT] foo.loom:5:1: Import paths must be relative and start with "./" or "../": "lib/foo.loom"
 ```
 
 v0 supports **local relative imports only**. Use `./` or `../`. No registry or remote imports yet.
