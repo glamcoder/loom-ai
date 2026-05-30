@@ -1,0 +1,123 @@
+module "workflows.prompt_library" {
+  version = "0.1.0"
+}
+
+# Compose multiple workflows from a single shared prompt library.
+#
+# This module imports the exported prompts from ./prompts/common.loom under
+# the `common` alias and reuses them across two programs that each produce a
+# different document. It also uses a module-local private prompt (Disclaimer
+# lives in the library and is not imported here; this module defines its own
+# local helper to show local references).
+
+import "./prompts/common.loom" as common
+
+# A module-local, unexported helper prompt referenced without an alias.
+prompt "Footer" {
+  param "owner" {
+    type     = Text
+    required = true
+  }
+
+  returns = Markdown
+
+  template = """
+_Questions? Ask {{ owner }}._
+"""
+}
+
+export program "TeamGuide" {
+  param "team" {
+    type    = Text
+    default = "Platform"
+  }
+
+  param "owner" {
+    type    = Text
+    default = "the Platform team"
+  }
+
+  effects = ["fs.write"]
+
+  step "render_header" {
+    use = common.Header
+    with = {
+      title    = "Team guide"
+      audience = param.team
+    }
+  }
+
+  step "render_footer" {
+    use = Footer
+    with = {
+      owner = param.owner
+    }
+  }
+
+  step "write_guide" {
+    use = fs.write
+    with = {
+      path    = "GUIDE.md"
+      content = step.render_header.output
+    }
+  }
+
+  output "guide" {
+    type = Markdown
+    from = step.render_header.output
+  }
+}
+
+export program "OnboardingDoc" {
+  param "owner" {
+    type    = Text
+    default = "the Platform team"
+  }
+
+  effects = ["fs.write"]
+
+  step "render_header" {
+    use = common.Header
+    with = {
+      title    = "Onboarding"
+      audience = "new hires"
+    }
+  }
+
+  step "write_onboarding" {
+    use = fs.write
+    with = {
+      path    = "ONBOARDING.md"
+      content = step.render_header.output
+    }
+  }
+
+  output "onboarding" {
+    type = Markdown
+    from = step.render_header.output
+  }
+}
+
+test "team_guide_renders_header_for_team" {
+  program = TeamGuide
+
+  with = {
+    team = "Billing"
+  }
+
+  expect {
+    output "guide" contains "Audience: Billing"
+    writes file "GUIDE.md"
+    effects = ["fs.write"]
+  }
+}
+
+test "onboarding_targets_new_hires" {
+  program = OnboardingDoc
+
+  expect {
+    output "onboarding" contains "new hires"
+    writes file "ONBOARDING.md"
+    effects = ["fs.write"]
+  }
+}
