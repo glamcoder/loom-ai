@@ -106,8 +106,8 @@ function evalAssertion(assertion: Assertion, result: RunResult): AssertionResult
 /**
  * Evaluate the `effects = [...]` attribute inside an expect block.
  *
- * Strategy: "includes" — every effect listed in the assertion must be present
- * in `ir.effects`. Extra effects in the IR are allowed (not a failure).
+ * Strategy: exact set equality. Order is ignored, but the expected and actual
+ * effect sets must contain the same names.
  */
 function evalEffectsAssertion(expectBlock: ExpectBlock, irEffects: string[]): AssertionResult {
   const attr = findAttribute(expectBlock.attributes, "effects");
@@ -140,14 +140,15 @@ function evalEffectsAssertion(expectBlock: ExpectBlock, irEffects: string[]): As
   }
 
   const missing = expected.filter((e) => !irEffects.includes(e));
-  const ok = missing.length === 0;
+  const extra = irEffects.filter((e) => !expected.includes(e));
+  const ok = missing.length === 0 && extra.length === 0;
 
   return {
     ok,
-    description: `effects includes [${expected.map((e) => `"${e}"`).join(", ")}]`,
+    description: `effects exactly [${expected.map((e) => `"${e}"`).join(", ")}]`,
     detail: ok
       ? undefined
-      : `Effects missing from IR: ${missing.map((e) => `"${e}"`).join(", ")}. IR effects: [${irEffects.map((e) => `"${e}"`).join(", ")}]`,
+      : `Expected effects [${expected.map((e) => `"${e}"`).join(", ")}], got [${irEffects.map((e) => `"${e}"`).join(", ")}]. Missing: [${missing.map((e) => `"${e}"`).join(", ")}]. Extra: [${extra.map((e) => `"${e}"`).join(", ")}].`,
   };
 }
 

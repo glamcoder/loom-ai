@@ -33,14 +33,14 @@ Loom starts where developers already are: repo-local instruction files, copy-pas
 
 Loom is frequently misread as a variant of existing tools. It is not.
 
-| Tool / category | Why Loom is different |
-|---|---|
-| **BAML** | BAML is a schema language for structured LLM outputs. Loom is a workflow language; structured output handling is a future step that happens outside the model, not baked in. |
-| **DSPy** | DSPy optimizes prompts via gradient-like feedback. Loom makes no assumptions about model internals and does not optimize prompts automatically. |
-| **LangGraph** | LangGraph is a Python graph execution framework for stateful agents. Loom is a compiled DSL; it has no Python dependency and no graph runtime in v0. |
-| **promptfoo** | promptfoo is a prompt evaluation and testing harness. Loom is a workflow compiler that can produce promptfoo-compatible inputs as an output artifact, but evaluation is not its purpose. |
-| **Flowise / LangFlow** | Visual drag-and-drop agent builders. Loom is code-first, Git-native, and has no visual editor or hosted runtime in v0. |
-| **Hosted agent platforms** | Loom v0 is a local CLI compiler/runtime. There is no hosted execution, no cloud platform, and no subscription in v0. |
+| Tool / category            | Why Loom is different                                                                                                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **BAML**                   | BAML is a schema language for structured LLM outputs. Loom is a workflow language; structured output handling is a future step that happens outside the model, not baked in.             |
+| **DSPy**                   | DSPy optimizes prompts via gradient-like feedback. Loom makes no assumptions about model internals and does not optimize prompts automatically.                                          |
+| **LangGraph**              | LangGraph is a Python graph execution framework for stateful agents. Loom is a compiled DSL; it has no Python dependency and no graph runtime in v0.                                     |
+| **promptfoo**              | promptfoo is a prompt evaluation and testing harness. Loom is a workflow compiler that can produce promptfoo-compatible inputs as an output artifact, but evaluation is not its purpose. |
+| **Flowise / LangFlow**     | Visual drag-and-drop agent builders. Loom is code-first, Git-native, and has no visual editor or hosted runtime in v0.                                                                   |
+| **Hosted agent platforms** | Loom v0 is a local CLI compiler/runtime. There is no hosted execution, no cloud platform, and no subscription in v0.                                                                     |
 
 ---
 
@@ -100,14 +100,14 @@ Teams building internal AI tooling who want a structured, auditable, testable wa
 
 ## Value proposition
 
-| Value | What it means |
-|---|---|
-| **Repeatability** | The same source + inputs always produce the same artifacts. |
-| **Reuse** | Prompts are composable, importable functions — not copy-pasted text. |
-| **Git compatibility** | Source is reviewable, diffable, and committable. Artifacts are trackable. |
-| **Inspectability** | Every run produces a trace. Nothing is hidden. |
-| **Portability** | Compiled artifacts target existing agent surfaces — no new runtime required. |
-| **Testability** | Workflows are testable without a live model, in CI, with golden checks. |
-| **Zero LLM dependency in v0** | Install pulls only two packages. No API keys. No network. Works offline. |
+| Value                         | What it means                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| **Repeatability**             | The same source + inputs always produce the same artifacts.                  |
+| **Reuse**                     | Prompts are composable, importable functions — not copy-pasted text.         |
+| **Git compatibility**         | Source is reviewable, diffable, and committable. Artifacts are trackable.    |
+| **Inspectability**            | Every run produces a trace. Nothing is hidden.                               |
+| **Portability**               | Compiled artifacts target existing agent surfaces — no new runtime required. |
+| **Testability**               | Workflows are testable without a live model, in CI, with golden checks.      |
+| **Zero LLM dependency in v0** | Install pulls only two packages. No API keys. No network. Works offline.     |
 
 The long-term vision is a high-level workflow language over black-box LLMs. The v0 wedge earns trust by solving the prompt-management problem first, deterministically and locally.

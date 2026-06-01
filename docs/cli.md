@@ -29,7 +29,10 @@ loom run examples/refactor.loom PrepareRefactor --method=foo --file=src/foo.ts
 
 - Every `param` declared `required = true` (i.e. without a default) must be supplied.
 - Params with a `default` may be omitted; the default is applied and recorded in the IR/trace.
-- Values are coerced and validated against each param's declared type.
+- Values are coerced and validated against each param's declared type. `Boolean`
+  accepts only `true` or `false`; `Integer` must be a finite integer; `Number`
+  must be finite; string-backed types (`Text`, `String`, `Symbol`, `Path`,
+  `Markdown`, `Artifact`) are carried as strings.
 
 A missing required param is a coded error with a non-zero exit:
 
@@ -103,16 +106,21 @@ loom compile examples/refactor.loom PrepareRefactor \
   "inputs": {
     "method": "calculateTotalCost",
     "file": "src/billing/costs.ts",
-    "goal": "Improve readability without changing behavior."
+    "goal": "Improve readability without changing behavior.",
   },
   "effects": ["fs.write"],
   "steps": [
     { "id": "render_instructions", "operation": "prompt.render", "...": "..." },
-    { "id": "write_agent_file", "operation": "fs.write", "...": "..." }
+    { "id": "write_agent_file", "operation": "fs.write", "...": "..." },
   ],
   "outputs": [
-    { "operation": "artifact.emit", "name": "agent_instructions", "type": "Markdown", "...": "..." }
-  ]
+    {
+      "operation": "artifact.emit",
+      "name": "agent_instructions",
+      "type": "Markdown",
+      "...": "...",
+    },
+  ],
 }
 ```
 
@@ -120,7 +128,7 @@ loom compile examples/refactor.loom PrepareRefactor \
 
 **Exit behavior:** `0` on success; non-zero on validation/compile errors.
 
-Use `compile` to inspect what a program *will* do before running it, or to diff the plan in review.
+Use `compile` to inspect what a program _will_ do before running it, or to diff the plan in review.
 
 ---
 
@@ -160,7 +168,7 @@ Trace: /abs/path/to/.loom/runs/1780148539674-4y0ddh/trace.json
 
 ## `loom test <file>`
 
-**Purpose:** Run every `test` block in the module. Tests execute in an **in-memory filesystem**; no files are written to disk and no LLM is called.
+**Purpose:** Run every `test` block in the module. Tests execute in an **in-memory filesystem**; no files are written to disk and no LLM is called. A test's `with` block is optional when program defaults cover the inputs.
 
 **Syntax:**
 
@@ -182,6 +190,9 @@ PASS  prepare_refactor_renders_agent_file
 
 A failing test prints `FAIL  <name>` followed by the failing assertions, then the summary.
 
+`effects = [...]` assertions compare the exact declared effect set. Order is
+ignored, but missing or extra effects fail the assertion.
+
 **Generated files:** none — tests are pure.
 
 **Exit behavior:** `0` if all tests pass, non-zero if any fail. This is the command to wire into CI. See [docs/tutorials/ci-checks.md](tutorials/ci-checks.md).
@@ -190,12 +201,12 @@ A failing test prints `FAIL  <name>` followed by the failing assertions, then th
 
 ## Error examples
 
-| Situation | Message |
-| --- | --- |
-| Missing required param | `error[LOOM_COMPILE_MISSING_REQUIRED_PARAM] Required param "method" was not provided and has no default` |
-| Undeclared effect | `error[LOOM_EFFECT_UNDECLARED] Step "w" uses effect "fs.write" but the program does not declare it in its effects list` |
-| Non-relative import | `error[LOOM_MODULE_NON_RELATIVE_IMPORT] Import paths must be relative and start with "./" or "../": "lib/foo.loom"` |
-| Import after a definition | `error[LOOM_PARSE_IMPORT_AFTER_DEFINITION] Import statements must appear before definitions and tests` |
-| Unknown template variable | `error[LOOM_RENDER_UNKNOWN_VAR] Unknown template variable "{{ goal }}" — no binding for "goal"` |
+| Situation                 | Message                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Missing required param    | `error[LOOM_COMPILE_MISSING_REQUIRED_PARAM] Required param "method" was not provided and has no default`            |
+| Undeclared effect         | `error[LOOM_EFFECT_UNDECLARED] Step "w" performs effect "fs.write" but the program does not declare it`             |
+| Non-relative import       | `error[LOOM_MODULE_NON_RELATIVE_IMPORT] Import paths must be relative and start with "./" or "../": "lib/foo.loom"` |
+| Import after a definition | `error[LOOM_PARSE_IMPORT_AFTER_DEFINITION] Import statements must appear before definitions and tests`              |
+| Unknown template variable | `error[LOOM_RENDER_UNKNOWN_VAR] Unknown template variable "{{ goal }}" — no binding for "goal"`                     |
 
 See [Getting started → Common first errors](getting-started.md#common-first-errors) for fixes.

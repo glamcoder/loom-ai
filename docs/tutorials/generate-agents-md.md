@@ -171,7 +171,7 @@ Improve readability without changing behavior.
 
 - Refactor only `calculateTotalCost` and the smallest necessary surrounding code.
 - Preserve external behavior.
-...
+  ...
 ```
 
 ## What to commit to Git

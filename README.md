@@ -20,7 +20,20 @@ Feeding instructions to AI coding agents is currently a mess:
 - **No deterministic tests** for prompt-generating workflows.
 - **No trace** of what generated a given artifact, or from which inputs.
 
-Loom treats this as a **build problem**. You write declarative `.loom` programs, compile them into artifacts, and get determinism, imports, tests, and traces for free.
+Loom treats this as a **build problem**. You write declarative `.loom` programs, compile them into artifacts, and get determinism, imports, tests, and traces for free. The practical v0 use case is AI-governance infrastructure for repos: generate agent instructions, review briefs, prompt libraries, and release checklists from one source of truth, then gate them in CI.
+
+## What this looks like in practice
+
+Use Loom when AI-facing files should be generated, not hand-maintained:
+
+- generate `AGENTS.md` from a shared team prompt and repo-specific params;
+- generate Copilot/Cursor/Claude instructions from the same source;
+- generate PR review checklists for sensitive areas like auth, billing, or migrations;
+- regenerate committed artifacts in CI and fail the build if they drift;
+- keep a trace of the exact inputs that produced each artifact.
+
+Loom is most useful for teams with more than one repo, more than one coding
+agent, or more than one copy of the same prompt.
 
 ## Install
 
@@ -129,6 +142,7 @@ test "hello_greets_the_name" {
   expect {
     output "greeting" contains "Hello, Ada"
     writes file "HELLO.md"
+    effects = ["fs.write"]
   }
 }
 ```
@@ -187,7 +201,7 @@ Tutorials:
 
 ## Roadmap
 
-- **v0** — deterministic artifact compiler *(current)*
+- **v0** — deterministic artifact compiler _(current)_
 - **v1** — `llm.complete` with a `MockLlmProvider` first
 - **v2** — parse / validate helpers for model output
 - **v3** — workflow control: retries, checks, conditions

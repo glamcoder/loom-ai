@@ -2,7 +2,7 @@
 
 Loom ships in **deterministic-first layers**. Each version adds capability without breaking the determinism guarantees of the layer below. This roadmap is **directional and may change** based on user feedback — it's a statement of intent, not a commitment to dates or scope.
 
-## v0.1 — deterministic artifact compiler *(current)*
+## v0.1 — deterministic artifact compiler _(current)_
 
 - Custom HCL-like `.loom` language: prompts, programs, tests, local imports/exports.
 - Deterministic runtime with `prompt.render`, `fs.write`, `artifact.emit`.

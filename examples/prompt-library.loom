@@ -58,13 +58,13 @@ export program "TeamGuide" {
     use = fs.write
     with = {
       path    = "GUIDE.md"
-      content = step.render_header.output
+      content = step.render_header.output + step.render_footer.output
     }
   }
 
   output "guide" {
     type = Markdown
-    from = step.render_header.output
+    from = step.render_header.output + step.render_footer.output
   }
 }
 
@@ -107,6 +107,7 @@ test "team_guide_renders_header_for_team" {
 
   expect {
     output "guide" contains "Audience: Billing"
+    output "guide" contains "Ask the Platform team"
     writes file "GUIDE.md"
     effects = ["fs.write"]
   }

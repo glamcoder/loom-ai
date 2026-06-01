@@ -1,6 +1,6 @@
 # Traces
 
-A **trace** is the record of a single `loom run`. It answers: *what did this run produce, and from which inputs?*
+A **trace** is the record of a single `loom run`. It answers: _what did this run produce, and from which inputs?_
 
 ## What trace files are
 
@@ -48,10 +48,10 @@ Each `steps` entry has an `id`, an `operation`, and a `status` (`"ok"` or `"erro
   "params": {
     "method": "calculateTotalCost",
     "file": "src/billing/costs.ts",
-    "goal": "Improve readability without changing behavior."
+    "goal": "Improve readability without changing behavior.",
   },
   "imports": [
-    { "alias": "refactor", "module": "prompts.refactor", "path": "./prompts/refactor.loom" }
+    { "alias": "refactor", "module": "prompts.refactor", "path": "./prompts/refactor.loom" },
   ],
   "effects": ["fs.write"],
   "steps": [
@@ -59,20 +59,24 @@ Each `steps` entry has an `id`, an `operation`, and a `status` (`"ok"` or `"erro
       "id": "render_instructions",
       "operation": "prompt.render",
       "status": "ok",
-      "output": "# Refactor method `calculateTotalCost`\n\nYou are refactoring ..."
+      "output": "# Refactor method `calculateTotalCost`\n\nYou are refactoring ...",
     },
     {
       "id": "write_agent_file",
       "operation": "fs.write",
       "status": "ok",
-      "path": "src/billing/AGENTS.md"
-    }
+      "path": "src/billing/AGENTS.md",
+    },
   ],
   "filesWritten": ["src/billing/AGENTS.md"],
   "outputs": [
-    { "name": "agent_instructions", "type": "Markdown", "value": "# Refactor method `calculateTotalCost`\n..." }
+    {
+      "name": "agent_instructions",
+      "type": "Markdown",
+      "value": "# Refactor method `calculateTotalCost`\n...",
+    },
   ],
-  "diagnostics": []
+  "diagnostics": [],
 }
 ```
 
@@ -91,4 +95,4 @@ When a step fails, the runtime still writes a trace: it includes every step that
 
 ## What changes when `llm.complete` arrives
 
-Today, traces are fully deterministic because nothing nondeterministic happens. When `llm.complete` lands (v1, mocked first — see [docs/future-llm-complete.md](future-llm-complete.md)), traces become even more valuable: every model call will additionally record the request and the completion that came back. That turns the trace into a precise record of *what a model was asked and what it answered* — the foundation for replay, caching, and regression testing of nondeterministic steps. The deterministic shape documented here is preserved; model steps are added alongside it.
+Today, traces are fully deterministic because nothing nondeterministic happens. When `llm.complete` lands (v1, mocked first — see [docs/future-llm-complete.md](future-llm-complete.md)), traces become even more valuable: every model call will additionally record the request and the completion that came back. That turns the trace into a precise record of _what a model was asked and what it answered_ — the foundation for replay, caching, and regression testing of nondeterministic steps. The deterministic shape documented here is preserved; model steps are added alongside it.

@@ -26,10 +26,10 @@ Usage: loom [options] [command]
 Loom v0 — deterministic workflow compiler and runtime
 
 Commands:
-  validate <file>              Parse and validate a Loom module file
-  compile <file> <program>     Compile a program to ProgramIR (prints JSON to stdout)
-  run <file> <program>         Compile and run a program
-  test <file>                  Run deterministic test blocks in a Loom module file
+  validate <file>                        Parse and validate a Loom module file
+  compile <file> <program> [params...]   Compile a program to ProgramIR (prints JSON)
+  run <file> <program> [params...]       Compile and run a program
+  test <file>                            Run deterministic test blocks
 ```
 
 ## 2. Get the examples (optional)
@@ -95,11 +95,15 @@ You'll see a JSON document containing the module, the declared `params`, the res
   "inputs": {
     "method": "calculateTotalCost",
     "file": "src/billing/costs.ts",
-    "goal": "Improve readability without changing behavior." // default applied
+    "goal": "Improve readability without changing behavior.", // default applied
   },
   "effects": ["fs.write"],
-  "steps": [ /* prompt.render, fs.write */ ],
-  "outputs": [ /* artifact.emit */ ]
+  "steps": [
+    /* prompt.render, fs.write */
+  ],
+  "outputs": [
+    /* artifact.emit */
+  ],
 }
 ```
 
@@ -165,18 +169,28 @@ cat .loom/runs/*/trace.json
   "params": {
     "method": "calculateTotalCost",
     "file": "src/billing/costs.ts",
-    "goal": "Improve readability without changing behavior."
+    "goal": "Improve readability without changing behavior.",
   },
   "effects": ["fs.write"],
   "steps": [
-    { "id": "render_instructions", "operation": "prompt.render", "status": "ok", "output": "# Refactor method ..." },
-    { "id": "write_agent_file", "operation": "fs.write", "status": "ok", "path": "src/billing/AGENTS.md" }
+    {
+      "id": "render_instructions",
+      "operation": "prompt.render",
+      "status": "ok",
+      "output": "# Refactor method ...",
+    },
+    {
+      "id": "write_agent_file",
+      "operation": "fs.write",
+      "status": "ok",
+      "path": "src/billing/AGENTS.md",
+    },
   ],
   "filesWritten": ["src/billing/AGENTS.md"],
   "outputs": [
-    { "name": "agent_instructions", "type": "Markdown", "value": "# Refactor method ..." }
+    { "name": "agent_instructions", "type": "Markdown", "value": "# Refactor method ..." },
   ],
-  "diagnostics": []
+  "diagnostics": [],
 }
 ```
 
@@ -200,7 +214,7 @@ PASS  prepare_refactor_renders_agent_file
 
 ## 9. Clean up generated files
 
-`run` writes real files. To remove what this walkthrough produced:
+`run` writes real files and a trace. To remove what this walkthrough produced:
 
 ```bash
 rm -rf .loom src/billing/AGENTS.md
@@ -230,7 +244,7 @@ Pass every required `param` (one without a `default`): `--method <value>`.
 A program whose step writes a file must declare the effect:
 
 ```
-error[LOOM_EFFECT_UNDECLARED] foo.loom:25:5: Step "w" uses effect "fs.write" but the program does not declare it in its effects list
+error[LOOM_EFFECT_UNDECLARED] foo.loom:25:5: Step "w" performs effect "fs.write" but the program does not declare it
   hint: Add "fs.write" to the effects list: effects = ["fs.write"]
 ```
 
@@ -254,13 +268,26 @@ Move all `import` statements above your `prompt`/`program`/`test` blocks (and af
 
 ### Unknown template variable
 
-A `{{ name }}` placeholder that doesn't correspond to a binding fails loudly at render time rather than silently producing an empty string:
+A `{{ name }}` or `{{ param.name }}` placeholder that doesn't correspond to a binding fails loudly at render time rather than silently producing an empty string:
 
 ```
 Unknown template variable "{{ goal }}" — no binding for "goal"
 ```
 
-Make sure every `{{ ... }}` in a template names a declared `param`, and that the step's `with = { ... }` passes the arguments the prompt expects.
+Make sure every `{{ ... }}` in a template names a declared prompt `param`, and that the step's `with = { ... }` passes every required argument the prompt expects.
+
+### `required` and `default` on the same param
+
+```hcl
+param "name" {
+  type = Text
+  required = true
+  default = "Ada"
+}
+```
+
+This is rejected. Choose one behavior: use `required = true` when callers must
+always pass the value, or use `default = ...` when the value can be omitted.
 
 ## Next steps
 

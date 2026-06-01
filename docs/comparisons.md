@@ -6,17 +6,17 @@ That positioning overlaps a little with several popular tools but is not the sam
 
 ## TL;DR
 
-| Tool | Primary job | Calls an LLM? | Overlap with Loom |
-| --- | --- | --- | --- |
-| **Loom (v0)** | Compile reusable prompt/artifact workflows; tests + traces | No (v0) | — |
-| BAML | Typed LLM functions in your app | Yes | "Prompts as code" |
-| DSPy | Programmatically optimize LLM pipelines | Yes | Composable prompt programs |
-| LangGraph | Orchestrate stateful agent graphs at runtime | Yes | Workflow modeling |
-| promptfoo | Evaluate/compare prompts and models | Yes | Testing prompts |
-| Flowise / LangFlow | Visually build LLM apps | Yes | Workflow composition |
-| Make | Deterministic build graph for files | No | Determinism, file artifacts |
-| Shell scripts | Glue / automation | Optional | Generating files |
-| Template engines | Fill placeholders in text | No | Rendering templates |
+| Tool               | Primary job                                                | Calls an LLM? | Overlap with Loom           |
+| ------------------ | ---------------------------------------------------------- | ------------- | --------------------------- |
+| **Loom (v0)**      | Compile reusable prompt/artifact workflows; tests + traces | No (v0)       | —                           |
+| BAML               | Typed LLM functions in your app                            | Yes           | "Prompts as code"           |
+| DSPy               | Programmatically optimize LLM pipelines                    | Yes           | Composable prompt programs  |
+| LangGraph          | Orchestrate stateful agent graphs at runtime               | Yes           | Workflow modeling           |
+| promptfoo          | Evaluate/compare prompts and models                        | Yes           | Testing prompts             |
+| Flowise / LangFlow | Visually build LLM apps                                    | Yes           | Workflow composition        |
+| Make               | Deterministic build graph for files                        | No            | Determinism, file artifacts |
+| Shell scripts      | Glue / automation                                          | Optional      | Generating files            |
+| Template engines   | Fill placeholders in text                                  | No            | Rendering templates         |
 
 ## BAML
 
@@ -24,7 +24,7 @@ BAML is a language for writing **typed LLM functions** you call from your applic
 
 - **Different:** BAML's whole point is calling models with structured I/O; Loom v0 makes no model calls.
 - **Similar:** both treat prompts as first-class, version-controlled code rather than strings buried in app code.
-- A future Loom `llm.complete` (v1) moves toward this space, but Loom's center of gravity is *generating reusable artifacts and workflows*, not being the typed call site in your app.
+- A future Loom `llm.complete` (v1) moves toward this space, but Loom's center of gravity is _generating reusable artifacts and workflows_, not being the typed call site in your app.
 
 ## DSPy
 
@@ -44,7 +44,7 @@ LangGraph orchestrates **stateful, multi-step agent graphs** at runtime, with br
 
 promptfoo is an **evaluation** harness: run prompts/models against test cases and compare outputs, often with model-graded assertions.
 
-- **Different:** promptfoo benchmarks model behavior across providers; Loom v0 tests that *deterministic artifact generation* is correct (substring/file/effect assertions), with no model in the loop.
+- **Different:** promptfoo benchmarks model behavior across providers; Loom v0 tests that _deterministic artifact generation_ is correct (substring/file/effect assertions), with no model in the loop.
 - **Complementary:** you might use Loom to generate prompts and promptfoo to evaluate how models respond to them.
 
 ## Flowise / LangFlow

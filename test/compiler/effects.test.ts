@@ -163,7 +163,7 @@ describe("effectForOperation", () => {
 describe("effect: llm.complete recognized as reserved (not unknown)", () => {
   // llm.complete declared in effects is recognized; the program has no steps
   // that would invoke it, so validateModule should succeed.
-  it("validateModule does not throw LOOM_EFFECT_UNKNOWN for effects = [\"llm.complete\"]", () => {
+  it('validateModule does not throw LOOM_EFFECT_UNKNOWN for effects = ["llm.complete"]', () => {
     const vfs: Record<string, string> = {
       "/vfs/main.loom": `
 module "main" { version = "1.0.0" }
@@ -179,9 +179,7 @@ export program "LlmProg" {
 }`,
     };
 
-    expect(() =>
-      validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) }),
-    ).not.toThrow();
+    expect(() => validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) })).not.toThrow();
   });
 
   it("isReservedEffect returns true for llm.complete", () => {
@@ -194,7 +192,7 @@ export program "LlmProg" {
 // ---------------------------------------------------------------------------
 
 describe("effect: shell.run recognized as reserved (not unknown)", () => {
-  it("validateModule does not throw LOOM_EFFECT_UNKNOWN for effects = [\"shell.run\"]", () => {
+  it('validateModule does not throw LOOM_EFFECT_UNKNOWN for effects = ["shell.run"]', () => {
     const vfs: Record<string, string> = {
       "/vfs/main.loom": `
 module "main" { version = "1.0.0" }
@@ -210,9 +208,7 @@ export program "ShellProg" {
 }`,
     };
 
-    expect(() =>
-      validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) }),
-    ).not.toThrow();
+    expect(() => validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) })).not.toThrow();
   });
 
   it("isReservedEffect returns true for shell.run", () => {
@@ -225,7 +221,7 @@ export program "ShellProg" {
 // ---------------------------------------------------------------------------
 
 describe("effect: unknown effect fails with LOOM_EFFECT_UNKNOWN", () => {
-  it("validateModule throws LOOM_EFFECT_UNKNOWN for effects = [\"does.not.exist\"]", () => {
+  it('validateModule throws LOOM_EFFECT_UNKNOWN for effects = ["does.not.exist"]', () => {
     const vfs: Record<string, string> = {
       "/vfs/main.loom": `
 module "main" { version = "1.0.0" }
@@ -327,9 +323,7 @@ export program "Greeter" {
 }`,
     };
 
-    expect(() =>
-      validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) }),
-    ).not.toThrow();
+    expect(() => validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) })).not.toThrow();
   });
 
   it("compileProgram succeeds for prompt.render-only program with no effects declaration", () => {
@@ -360,9 +354,14 @@ export program "Greeter" {
 }`,
     };
 
-    const ir = compileProgram("/vfs/main.loom", "Greeter", { name: "world" }, {
-      readFile: makeVfs(vfs),
-    });
+    const ir = compileProgram(
+      "/vfs/main.loom",
+      "Greeter",
+      { name: "world" },
+      {
+        readFile: makeVfs(vfs),
+      },
+    );
     expect(ir.effects).toEqual([]);
     expect(ir.steps[0].operation).toBe("prompt.render");
   });

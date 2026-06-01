@@ -15,12 +15,7 @@ export const IR_FORMAT_VERSION = 1 as const;
 // deterministically against bound params (`inputs`) and prior step outputs.
 // ---------------------------------------------------------------------------
 
-export type IRExpr =
-  | IRLiteral
-  | IRParamRef
-  | IRStepRef
-  | IRCall
-  | IRConcat;
+export type IRExpr = IRLiteral | IRParamRef | IRStepRef | IRCall | IRConcat;
 
 export interface IRLiteral {
   kind: "literal";

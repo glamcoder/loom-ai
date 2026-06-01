@@ -272,6 +272,60 @@ test "failing_writes_test" {
 });
 
 // ---------------------------------------------------------------------------
+// Failing assertion: effects must match exactly
+// ---------------------------------------------------------------------------
+
+describe("runTestFile: failing effects assertion for extra declared effect", () => {
+  const syntheticSrc = `
+module "test.fixture.effects" {
+  version = "0.1.0"
+}
+
+export program "ExtraEffect" {
+  effects = ["fs.write", "llm.complete"]
+
+  step "write_file" {
+    use = fs.write
+    with = {
+      path = "out.md"
+      content = "hello"
+    }
+  }
+
+  output "path" {
+    type = Path
+    from = step.write_file.output
+  }
+}
+
+test "extra_effect_fails" {
+  program = ExtraEffect
+  expect {
+    effects = ["fs.write"]
+  }
+}
+`.trim();
+
+  const syntheticEntryFile = join(repoRoot, "examples/synthetic-effects-fixture.loom");
+  const virtualFs: Record<string, string> = {
+    [syntheticEntryFile]: syntheticSrc,
+  };
+
+  const result = runTestFile(syntheticEntryFile, {
+    readFile: makeReadFile(virtualFs),
+  });
+
+  it("reports 1 failed test", () => {
+    expect(result.failed).toBe(1);
+  });
+
+  it("assertion detail mentions the extra effect", () => {
+    const failedAssertion = result.results[0].assertions.find((a) => !a.ok);
+    expect(failedAssertion?.detail).toContain("llm.complete");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Missing program reference
 // ---------------------------------------------------------------------------
 

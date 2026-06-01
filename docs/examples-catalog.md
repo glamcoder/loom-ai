@@ -49,7 +49,7 @@ All runnable examples ship in the `examples/` directory. Each is plain `.loom` s
 
 ## `examples/prompt-library.loom`
 
-- **Demonstrates:** composing multiple workflows from one prompt library — importing with an alias, a module-local helper prompt, and two programs (`TeamGuide`, `OnboardingDoc`) reusing the same `Header`. Imports `examples/prompts/common.loom`.
+- **Demonstrates:** composing multiple workflows from one prompt library — importing with an alias, a module-local helper prompt, chained prompt outputs, and two programs (`TeamGuide`, `OnboardingDoc`) reusing the same `Header`. Imports `examples/prompts/common.loom`.
 - **Run:**
   ```bash
   loom run examples/prompt-library.loom TeamGuide --team Billing

@@ -70,6 +70,14 @@ export program "Hello" {
     with = { name = param.name }
   }
 
+  step "write" {
+    use = fs.write
+    with = {
+      path = "HELLO.md"
+      content = step.render.output
+    }
+  }
+
   output "greeting" {
     type = Markdown
     from = step.render.output

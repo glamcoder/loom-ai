@@ -10,8 +10,8 @@ Each `.loom` file is exactly one module. The top-level forms must appear in this
 
 1. exactly one `module` declaration (required, must be the first form);
 2. zero or more `import` statements;
-3. zero or more `prompt` or `program` blocks (exported or unexported);
-4. zero or more `test` blocks.
+3. zero or more `prompt`, `program`, or `test` blocks. Prompt/program
+   definitions may be exported or private; tests are never exported.
 
 The ordering is enforced by the parser: a top-level form before the `module` block is rejected (`LOOM_PARSE_MODULE_NOT_FIRST`), and an `import` after any prompt/program/test block is rejected (`LOOM_PARSE_IMPORT_AFTER_DEFINITION`). Definitions and tests may be interleaved with one another, but all imports must precede them.
 
@@ -110,10 +110,10 @@ You are refactoring `{{ method }}` in `{{ file }}`.
 
 Fields:
 
-| Field      | Required | Description |
-|------------|----------|-------------|
-| `param`    | no       | Zero or more parameter blocks (see §6). |
-| `returns`  | no       | The type of the rendered output (e.g. `Markdown`, `Text`). Defaults to `Text`. |
+| Field      | Required | Description                                                                                                      |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `param`    | no       | Zero or more parameter blocks (see §6).                                                                          |
+| `returns`  | no       | The type of the rendered output (e.g. `Markdown`, `Text`). Defaults to `Text`.                                   |
 | `template` | yes      | A triple-quoted string. `{{ name }}` placeholders are replaced by the corresponding param values at render time. |
 
 Template interpolation uses `{{ param_name }}` syntax. All referenced names must be declared as params.
@@ -122,7 +122,9 @@ Template interpolation uses `{{ param_name }}` syntax. All referenced names must
 
 ## 6. Params and defaults
 
-Params are declared inside `prompt`, `program`, and `test` blocks. Each `param` block has a name string and a body:
+Params are declared inside `prompt` and `program` blocks. Test blocks do not
+declare params; they provide literal input values through `with = { ... }`.
+Each `param` block has a name string and a body:
 
 ```hcl
 param "goal" {
@@ -131,24 +133,27 @@ param "goal" {
 }
 ```
 
-| Field      | Required | Description |
-|------------|----------|-------------|
-| `type`     | yes      | One of the built-in types: `Text`, `Symbol`, `Path`, `Markdown`, `Number`, `Boolean`. |
-| `required` | no       | Boolean. If `true`, the param must be supplied at call site. Defaults to `false`. |
-| `default`  | no       | A literal value applied when the param is omitted. Incompatible with `required = true`. |
+| Field      | Required | Description                                                                                                            |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `type`     | yes      | One of the built-in types: `Text`, `String`, `Symbol`, `Path`, `Markdown`, `Boolean`, `Integer`, `Number`, `Artifact`. |
+| `required` | no       | Boolean. If `true`, the param must be supplied at call site. Defaults to `false`.                                      |
+| `default`  | no       | A literal value applied when the param is omitted. Incompatible with `required = true`.                                |
 
 `required` and `default` are mutually exclusive. A param with `required = true` and a `default` is a compile-time error.
 
 Built-in types in v0:
 
-| Type       | Description |
-|------------|-------------|
-| `Text`     | Arbitrary string. |
-| `Symbol`   | An identifier or short name (e.g. a function name). Treated as `Text` at runtime. |
-| `Path`     | A POSIX file path string. Enables path built-ins. |
-| `Markdown` | A markdown string. Treated as `Text` at runtime; used for documentation and type checking. |
-| `Number`   | A numeric value. |
-| `Boolean`  | `true` or `false`. |
+| Type       | Description                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------- |
+| `Text`     | Arbitrary string.                                                                                        |
+| `String`   | String value. Equivalent to `Text` at runtime; useful when a prompt library wants a generic string name. |
+| `Symbol`   | An identifier or short name (e.g. a function name). Treated as `Text` at runtime.                        |
+| `Path`     | A POSIX file path string. Enables path built-ins.                                                        |
+| `Markdown` | A markdown string. Treated as `Text` at runtime; used for documentation and type checking.               |
+| `Boolean`  | `true` or `false`.                                                                                       |
+| `Integer`  | An integer numeric value. CLI and test inputs are rejected unless they coerce to an integer.             |
+| `Number`   | A numeric value.                                                                                         |
+| `Artifact` | String-backed artifact value. In v0 this is documentation/type metadata for produced artifacts.          |
 
 ---
 
@@ -215,10 +220,10 @@ step "step_id" {
 }
 ```
 
-| Field  | Required | Description |
-|--------|----------|-------------|
-| `use`  | yes      | The operation or imported prompt to invoke. Must be a v0 operation or an imported exported prompt reference. |
-| `with` | yes      | A map of argument bindings. Values are expressions (see §10). |
+| Field  | Required            | Description                                                                                                                                                                             |
+| ------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `use`  | yes                 | The operation or prompt to invoke. Must be `fs.write`, a local prompt, or an imported exported prompt reference. Explicit `prompt.render` and `artifact.emit` steps are rejected in v0. |
+| `with` | operation-dependent | A map of argument bindings. `fs.write` requires it. Prompt steps may omit it only when no required prompt argument is needed. Values are expressions (see §11).                         |
 
 Step outputs are referenced in subsequent steps or output blocks using `step.<id>.output`.
 
@@ -237,9 +242,9 @@ output "agent_instructions" {
 }
 ```
 
-| Field  | Required | Description |
-|--------|----------|-------------|
-| `type` | yes      | The declared type of the output (e.g. `Markdown`, `Text`). |
+| Field  | Required | Description                                                                             |
+| ------ | -------- | --------------------------------------------------------------------------------------- |
+| `type` | yes      | The declared type of the output (e.g. `Markdown`, `Text`).                              |
 | `from` | yes      | An expression evaluating to the output value. Typically a `step.<id>.output` reference. |
 
 ---
@@ -266,19 +271,19 @@ test "prepare_refactor_renders_agent_file" {
 }
 ```
 
-| Field     | Required | Description |
-|-----------|----------|-------------|
-| `program` | yes      | Unquoted name of a program defined in the same module. |
-| `with`    | yes      | Input bindings. Values are literal expressions. |
-| `expect`  | yes      | A block of assertions (see below). |
+| Field     | Required | Description                                                                                                                                      |
+| --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `program` | yes      | Unquoted name of a program defined in the same module.                                                                                           |
+| `with`    | no       | Input bindings. Values must be literal expressions. Omit it when the target program has no required params or all required params have defaults. |
+| `expect`  | yes      | A block of assertions (see below).                                                                                                               |
 
 ### Expect assertions
 
-| Assertion | Description |
-|-----------|-------------|
-| `output "name" contains "substring"` | Asserts the named output contains the given string. |
-| `writes file "path"` | Asserts the program writes a file at the given path (checked against the in-memory filesystem). |
-| `effects = ["effect.name", ...]` | Asserts the declared effects match exactly. |
+| Assertion                            | Description                                                                                                             |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `output "name" contains "substring"` | Asserts the named output contains the given string.                                                                     |
+| `writes file "path"`                 | Asserts the program writes a file at the given path (checked against the in-memory filesystem).                         |
+| `effects = ["effect.name", ...]`     | Asserts the declared effects match this set exactly. Order is ignored, but missing or extra effects fail the assertion. |
 
 The test runner uses an in-memory filesystem — no real disk writes occur during `loom test`.
 
@@ -286,16 +291,16 @@ The test runner uses an in-memory filesystem — no real disk writes occur durin
 
 ## 11. Expressions
 
-Expressions appear as values in `with`, `from`, `default`, and `expect` contexts.
+Expressions appear as values in step `with`, output `from`, param `default`, and test `with` contexts.
 
 ### Literals
 
-| Syntax | Type |
-|--------|------|
-| `"hello"` | Text / string |
-| `42` | Number |
-| `true` / `false` | Boolean |
-| `"""..."""` | Multi-line Text (triple-quoted; used in templates) |
+| Syntax           | Type                                               |
+| ---------------- | -------------------------------------------------- |
+| `"hello"`        | Text / string                                      |
+| `42`             | Number                                             |
+| `true` / `false` | Boolean                                            |
+| `"""..."""`      | Multi-line Text (triple-quoted; used in templates) |
 
 ### Param references
 
@@ -306,6 +311,8 @@ param.goal
 ```
 
 References the value of the named param in the enclosing program or prompt.
+Inside templates, both `{{ name }}` and `{{ param.name }}` resolve to the same
+prompt parameter binding.
 
 ### Step output references
 
@@ -389,10 +396,10 @@ step "write_agent_file" {
 
 Arguments:
 
-| Key       | Type   | Description |
-|-----------|--------|-------------|
-| `path`    | Path   | Destination file path, relative to cwd. |
-| `content` | Text   | The string to write. |
+| Key       | Type | Description                             |
+| --------- | ---- | --------------------------------------- |
+| `path`    | Path | Destination file path, relative to cwd. |
+| `content` | Text | The string to write.                    |
 
 ### `artifact.emit`
 
@@ -426,10 +433,13 @@ Rules:
 - `fs.write` requires `effects = ["fs.write"]` on the enclosing program.
 - `prompt.render` and `artifact.emit` are pure — they produce values but do not cause external side effects and do not require an effects declaration.
 - Calling `fs.write` in a step without declaring `fs.write` in `effects` is a compile-time error.
-- A program must declare every effect it uses. Under-declaration (using an effect that is not declared) is a compile-time error (`LOOM_EFFECT_UNDECLARED`), and an unknown effect name is rejected (`LOOM_EFFECT_UNKNOWN`). Declaring an extra *known* effect that the program does not actually use is allowed in v0 but discouraged — keep the effects list to exactly what the program performs.
+- A program must declare every effect it uses. Under-declaration (using an effect that is not declared) is a compile-time error (`LOOM_EFFECT_UNDECLARED`), and an unknown effect name is rejected (`LOOM_EFFECT_UNKNOWN`). Declaring an extra _known_ effect that the program does not actually use is allowed in v0 but discouraged — keep the effects list to exactly what the program performs.
 - Test assertions may check `effects = [...]` to verify the declared effect set.
 
 Future effect tokens (reserved, not implemented in v0): `llm.complete`, `shell.run`, `human.approve`, `agent.execute`.
+Reserved effect tokens are recognized names, so declaring one as an extra effect
+is allowed if no v0 step uses it. They do not make the corresponding reserved
+operation executable in v0.
 
 ---
 
@@ -437,14 +447,14 @@ Future effect tokens (reserved, not implemented in v0): `llm.complete`, `shell.r
 
 The following operations are documented here but are NOT implemented in v0. Using them in a v0 `.loom` file is a compile-time error. They are reserved to prevent accidental naming collisions in DSL extensions.
 
-| Operation          | Future semantics |
-|--------------------|-----------------|
-| `llm.complete`     | Black-box LLM text completion. See `docs/future-llm-complete.md`. |
-| `parse.json`       | Parse untrusted text as JSON. |
-| `validate.schema`  | Validate a value against a schema. |
-| `shell.run`        | Execute a shell command. |
-| `human.approve`    | Pause for human review/approval. |
-| `agent.execute`    | Delegate a task to an autonomous agent. |
+| Operation         | Future semantics                                                  |
+| ----------------- | ----------------------------------------------------------------- |
+| `llm.complete`    | Black-box LLM text completion. See `docs/future-llm-complete.md`. |
+| `parse.json`      | Parse untrusted text as JSON.                                     |
+| `validate.schema` | Validate a value against a schema.                                |
+| `shell.run`       | Execute a shell command.                                          |
+| `human.approve`   | Pause for human review/approval.                                  |
+| `agent.execute`   | Delegate a task to an autonomous agent.                           |
 
 ---
 
