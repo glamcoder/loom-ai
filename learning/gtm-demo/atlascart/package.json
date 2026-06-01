@@ -1,0 +1,22 @@
+{
+  "name": "atlascart",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Loom GTM demo: deterministic AI governance for a checkout-risk service.",
+  "scripts": {
+    "test": "node src/checkout.test.js",
+    "loom:validate": "node tools/loom.mjs validate loom/workflows/ai-governance.loom",
+    "loom:test": "node tools/loom.mjs test loom/workflows/ai-governance.loom",
+    "loom:generate": "node tools/loom.mjs run loom/workflows/ai-governance.loom GenerateAIGovernanceKit --product=AtlasCart --service=checkout-risk-api --entrypoint=src/checkout.js",
+    "loom:cleanup": "node tools/cleanup-generated.mjs",
+    "demo:check": "npm run test && npm run loom:validate && npm run loom:test"
+  },
+  "keywords": [
+    "loom",
+    "ai-governance",
+    "checkout",
+    "demo"
+  ],
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,141 @@
+module "learning.prompts.agent_kit" {
+  version = "0.1.0"
+}
+
+# Reusable prompt primitives for agent-facing workflow artifacts.
+
+export prompt "SystemFrame" {
+  param "project" {
+    type = Text
+    required = true
+  }
+
+  param "audience" {
+    type = Text
+    default = "AI coding agents"
+  }
+
+  param "mode" {
+    type = Symbol
+    default = "implementation"
+  }
+
+  returns = Markdown
+
+  template = """
+# {{ project }} Agent Frame
+
+Audience: {{ audience }}
+Mode: {{ mode }}
+
+Treat the generated artifact as executable guidance for repeatable agent work.
+Prefer deterministic local evidence over guesses, and keep changes scoped to the
+request.
+"""
+}
+
+export prompt "InputContract" {
+  param "entrypoint" {
+    type = Path
+    required = true
+  }
+
+  param "owner" {
+    type = Text
+    default = "the repository maintainers"
+  }
+
+  param "strict" {
+    type = Boolean
+    default = true
+  }
+
+  returns = Markdown
+
+  template = """
+## Input Contract
+
+- Entrypoint: `{{ entrypoint }}`
+- Owning team: {{ owner }}
+- Strict mode: {{ strict }}
+
+The workflow must make required inputs explicit, bind defaults intentionally, and
+surface validation failures before writing files.
+"""
+}
+
+export prompt "RiskRegister" {
+  param "surface" {
+    type = Text
+    required = true
+  }
+
+  param "risk_budget" {
+    type = Integer
+    default = 3
+  }
+
+  param "confidence" {
+    type = Number
+    default = 0.8
+  }
+
+  returns = Markdown
+
+  template = """
+## Risk Register
+
+Surface: {{ surface }}
+Risk budget: {{ risk_budget }}
+Confidence target: {{ confidence }}
+
+Track edge cases that could break deterministic behavior: missing params,
+forward step references, undeclared effects, invalid import boundaries, and
+template variables without bindings.
+"""
+}
+
+export prompt "WritePlan" {
+  param "frame" {
+    type = Markdown
+    required = true
+  }
+
+  param "contract" {
+    type = Markdown
+    required = true
+  }
+
+  param "risks" {
+    type = Markdown
+    required = true
+  }
+
+  param "artifact_name" {
+    type = Text
+    required = true
+  }
+
+  returns = Markdown
+
+  template = """
+{{ frame }}
+
+{{ contract }}
+
+{{ risks }}
+
+## Artifact
+
+Write `{{ artifact_name }}` only after all pure rendering steps succeed.
+"""
+}
+
+# Private prompt: useful inside this module, intentionally unavailable to imports.
+prompt "PrivateImplementationNote" {
+  returns = Markdown
+
+  template = """
+This private prompt is not exported and cannot be referenced as agent.PrivateImplementationNote.
+"""
+}

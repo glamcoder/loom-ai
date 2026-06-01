@@ -1,0 +1,185 @@
+module "learning.repository_maintenance" {
+  version = "0.1.0"
+}
+
+import "./prompts/agent-kit.loom" as agent
+
+# A second workflow module that reuses the same prompt library for a different
+# use case: maintenance plans for docs, tests, and generated artifacts.
+
+prompt "MaintenanceMatrix" {
+  param "component" {
+    type = Text
+    required = true
+  }
+
+  param "evidence_path" {
+    type = Path
+    required = true
+  }
+
+  param "priority" {
+    type = Symbol
+    default = "medium"
+  }
+
+  param "limit" {
+    type = Integer
+    default = 6
+  }
+
+  returns = Markdown
+
+  template = """
+## Maintenance Matrix
+
+Component: {{ component }}
+Evidence path: `{{ evidence_path }}`
+Priority: {{ priority }}
+Limit: {{ limit }}
+
+Rows:
+- Syntax coverage
+- Import/export boundaries
+- Type coercion
+- Effects declaration
+- Runtime traces
+- Deterministic tests
+"""
+}
+
+prompt "MaintenancePlan" {
+  param "frame" {
+    type = Markdown
+    required = true
+  }
+
+  param "matrix" {
+    type = Markdown
+    required = true
+  }
+
+  param "basename" {
+    type = Text
+    required = true
+  }
+
+  returns = Markdown
+
+  template = """
+{{ frame }}
+
+{{ matrix }}
+
+## Review Target
+
+The reviewed file basename is `{{ basename }}`.
+"""
+}
+
+export program "BuildMaintenancePlan" {
+  param "component" {
+    type = Text
+    required = true
+  }
+
+  param "evidence_path" {
+    type = Path
+    required = true
+  }
+
+  param "priority" {
+    type = Symbol
+    default = "medium"
+  }
+
+  param "limit" {
+    type = Integer
+    default = 6
+  }
+
+  effects = ["fs.write"]
+
+  step "render_frame" {
+    use = agent.SystemFrame
+    with = {
+      project = param.component
+      audience = "maintainers and coding agents"
+      mode = param.priority
+    }
+  }
+
+  step "render_matrix" {
+    use = MaintenanceMatrix
+    with = {
+      component = param.component
+      evidence_path = param.evidence_path
+      priority = param.priority
+      limit = param.limit
+    }
+  }
+
+  step "compose_plan" {
+    use = MaintenancePlan
+    with = {
+      frame = step.render_frame.output
+      matrix = step.render_matrix.output
+      basename = basename(param.evidence_path)
+    }
+  }
+
+  step "write_plan" {
+    use = fs.write
+    with = {
+      path = dirname(param.evidence_path) + "/MAINTENANCE.md"
+      content = step.compose_plan.output
+    }
+  }
+
+  output "maintenance_plan" {
+    type = Markdown
+    from = step.compose_plan.output
+  }
+
+  output "maintenance_path" {
+    type = Path
+    from = step.write_plan.output
+  }
+}
+
+test "maintenance_plan_handles_nested_path" {
+  program = BuildMaintenancePlan
+
+  with = {
+    component = "Loom docs"
+    evidence_path = "docs/language-v0.md"
+    priority = "high"
+    limit = 8
+  }
+
+  expect {
+    output "maintenance_plan" contains "Mode: high"
+    output "maintenance_plan" contains "Limit: 8"
+    output "maintenance_plan" contains "basename is `language-v0.md`"
+    output "maintenance_path" contains "docs/MAINTENANCE.md"
+    writes file "docs/MAINTENANCE.md"
+    effects = ["fs.write"]
+  }
+}
+
+test "maintenance_plan_handles_root_path_dirname_edge_case" {
+  program = BuildMaintenancePlan
+
+  with = {
+    component = "Root docs"
+    evidence_path = "README.md"
+  }
+
+  expect {
+    output "maintenance_plan" contains "Mode: medium"
+    output "maintenance_plan" contains "Evidence path: `README.md`"
+    output "maintenance_path" contains "./MAINTENANCE.md"
+    writes file "./MAINTENANCE.md"
+    effects = ["fs.write"]
+  }
+}

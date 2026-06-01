@@ -1,0 +1,44 @@
+name: AI governance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify-generated-guidance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Test checkout behavior
+        run: npm test
+
+      - name: Validate Loom governance workflow
+        run: npm run loom:validate
+
+      - name: Run deterministic Loom tests
+        run: npm run loom:test
+
+      - name: Regenerate AI-governance artifacts
+        run: npm run loom:generate
+
+      - name: Fail if generated artifacts are stale
+        run: |
+          git diff --exit-code -- \
+            ai/agent-handbook.md \
+            .github/copilot-instructions.md \
+            .github/pull_request_template.md \
+            docs/release-readiness.md \
+            demo/generated-manifest.json
+          test -z "$(git status --porcelain -- \
+            ai/agent-handbook.md \
+            .github/copilot-instructions.md \
+            .github/pull_request_template.md \
+            docs/release-readiness.md \
+            demo/generated-manifest.json)"

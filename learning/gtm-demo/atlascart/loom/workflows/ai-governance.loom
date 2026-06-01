@@ -1,0 +1,183 @@
+module "atlascart.ai_governance" {
+  version = "0.1.0"
+}
+
+import "./prompts/governance.loom" as governance
+
+export program "GenerateAIGovernanceKit" {
+  param "product" {
+    type = Text
+    default = "AtlasCart"
+  }
+
+  param "service" {
+    type = Symbol
+    default = "checkout-risk-api"
+  }
+
+  param "entrypoint" {
+    type = Path
+    default = "src/checkout.js"
+  }
+
+  param "language" {
+    type = Text
+    default = "JavaScript"
+  }
+
+  param "test_command" {
+    type = Text
+    default = "npm test"
+  }
+
+  param "owner" {
+    type = Text
+    default = "Revenue Platform"
+  }
+
+  param "compliance_surface" {
+    type = Text
+    default = "checkout risk scoring and payment authorization"
+  }
+
+  effects = ["fs.write"]
+
+  step "render_agent_handbook" {
+    use = governance.AgentHandbook
+    with = {
+      product = param.product
+      service = param.service
+      entrypoint = param.entrypoint
+      language = param.language
+      test_command = param.test_command
+      owner = param.owner
+      compliance_surface = param.compliance_surface
+    }
+  }
+
+  step "write_agent_handbook" {
+    use = fs.write
+    with = {
+      path = "ai/agent-handbook.md"
+      content = step.render_agent_handbook.output
+    }
+  }
+
+  step "render_copilot_instructions" {
+    use = governance.CopilotInstructions
+    with = {
+      product = param.product
+      entrypoint = param.entrypoint
+      test_command = param.test_command
+    }
+  }
+
+  step "write_copilot_instructions" {
+    use = fs.write
+    with = {
+      path = ".github/copilot-instructions.md"
+      content = step.render_copilot_instructions.output
+    }
+  }
+
+  step "render_pr_template" {
+    use = governance.PullRequestTemplate
+    with = {
+      product = param.product
+      service = param.service
+      test_command = param.test_command
+    }
+  }
+
+  step "write_pr_template" {
+    use = fs.write
+    with = {
+      path = ".github/pull_request_template.md"
+      content = step.render_pr_template.output
+    }
+  }
+
+  step "render_release_readiness" {
+    use = governance.ReleaseReadiness
+    with = {
+      product = param.product
+      service = param.service
+      owner = param.owner
+      generated_count = 5
+      confidence = 0.92
+    }
+  }
+
+  step "write_release_readiness" {
+    use = fs.write
+    with = {
+      path = "docs/release-readiness.md"
+      content = step.render_release_readiness.output
+    }
+  }
+
+  step "render_demo_manifest" {
+    use = governance.DemoManifest
+    with = {
+      product = param.product
+      service = param.service
+      entrypoint = param.entrypoint
+      agent_path = step.write_agent_handbook.output
+      copilot_path = step.write_copilot_instructions.output
+      pr_path = step.write_pr_template.output
+      release_path = step.write_release_readiness.output
+    }
+  }
+
+  step "write_demo_manifest" {
+    use = fs.write
+    with = {
+      path = "demo/generated-manifest.json"
+      content = step.render_demo_manifest.output
+    }
+  }
+
+  output "agent_handbook" {
+    type = Markdown
+    from = step.render_agent_handbook.output
+  }
+
+  output "release_readiness" {
+    type = Markdown
+    from = step.render_release_readiness.output
+  }
+
+  output "manifest" {
+    type = Text
+    from = step.render_demo_manifest.output
+  }
+
+  output "manifest_path" {
+    type = Path
+    from = step.write_demo_manifest.output
+  }
+}
+
+test "governance_kit_generates_all_review_artifacts" {
+  program = GenerateAIGovernanceKit
+
+  with = {
+    product = "AtlasCart"
+    service = "checkout-risk-api"
+    entrypoint = "src/checkout.js"
+  }
+
+  expect {
+    output "agent_handbook" contains "AtlasCart AI Agent Handbook"
+    output "agent_handbook" contains "Required verification: `npm test`"
+    output "release_readiness" contains "Generated AI-governance artifacts: 5"
+    output "manifest" contains "\"ciGate\""
+    output "manifest_path" contains "demo/generated-manifest.json"
+    writes file "ai/agent-handbook.md"
+    writes file ".github/copilot-instructions.md"
+    writes file ".github/pull_request_template.md"
+    writes file "docs/release-readiness.md"
+    writes file "demo/generated-manifest.json"
+    effects = ["fs.write"]
+  }
+}

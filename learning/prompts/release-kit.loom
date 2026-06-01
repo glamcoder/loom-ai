@@ -1,0 +1,101 @@
+module "learning.prompts.release_kit" {
+  version = "0.1.0"
+}
+
+# Prompt fragments for release, migration, and handoff artifacts.
+
+export prompt "ReleaseBrief" {
+  param "service" {
+    type = Text
+    required = true
+  }
+
+  param "version" {
+    type = Symbol
+    required = true
+  }
+
+  param "target_file" {
+    type = Path
+    required = true
+  }
+
+  param "rollback" {
+    type = Text
+    default = "Revert the generated artifact and rerun the previous stable workflow."
+  }
+
+  returns = Markdown
+
+  template = """
+# {{ service }} Release {{ version }}
+
+Primary artifact: `{{ target_file }}`
+
+Rollback: {{ rollback }}
+"""
+}
+
+export prompt "Checklist" {
+  param "scope" {
+    type = Text
+    required = true
+  }
+
+  param "include_security" {
+    type = Boolean
+    default = true
+  }
+
+  param "max_followups" {
+    type = Integer
+    default = 5
+  }
+
+  returns = Markdown
+
+  template = """
+## Checklist
+
+Scope: {{ scope }}
+Include security review: {{ include_security }}
+Maximum follow-ups: {{ max_followups }}
+
+- Validate the Loom module graph.
+- Compile the selected program and inspect the Program IR.
+- Run tests with the in-memory filesystem.
+- Confirm written file paths match the planned artifact paths.
+"""
+}
+
+export prompt "Handoff" {
+  param "brief" {
+    type = Markdown
+    required = true
+  }
+
+  param "checklist" {
+    type = Markdown
+    required = true
+  }
+
+  param "owner" {
+    type = Text
+    default = "Release engineering"
+  }
+
+  returns = Markdown
+
+  template = """
+{{ brief }}
+
+{{ checklist }}
+
+## Handoff
+
+Owner: {{ owner }}
+
+The artifact is deterministic: all dynamic text came from typed params,
+defaults, or previous step outputs.
+"""
+}

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AtlasCart x Loom GTM Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">GTM demo / investor pitch</p>
+          <h1>AI coding governance that ships like software.</h1>
+          <p class="lede">
+            AtlasCart uses Loom to generate agent instructions, PR review policy,
+            release readiness, and demo metadata from one deterministic workflow.
+          </p>
+          <div class="command">
+            <span>$</span>
+            <code>npm run loom:generate</code>
+          </div>
+        </div>
+        <div class="artifact-console" aria-label="Generated artifact summary">
+          <div class="console-bar">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="metric-row">
+            <div>
+              <strong>5</strong>
+              <span>artifacts</span>
+            </div>
+            <div>
+              <strong>1</strong>
+              <span>source of truth</span>
+            </div>
+            <div>
+              <strong>0</strong>
+              <span>LLM calls</span>
+            </div>
+          </div>
+          <ul>
+            <li>ai/agent-handbook.md</li>
+            <li>.github/copilot-instructions.md</li>
+            <li>.github/pull_request_template.md</li>
+            <li>docs/release-readiness.md</li>
+            <li>demo/generated-manifest.json</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="visual">
+        <img src="assets/loom-pipeline.svg" alt="Loom pipeline from typed source to generated artifacts and CI gate" />
+      </section>
+
+      <section class="grid">
+        <article>
+          <h2>Real pain</h2>
+          <p>
+            AI agent instructions drift across repos, PR templates, Copilot rules,
+            and release docs. Reviewers cannot tell whether guidance is current.
+          </p>
+        </article>
+        <article>
+          <h2>Loom value</h2>
+          <p>
+            Prompt governance becomes a typed, imported, tested build asset with
+            explicit file writes and traces for every generated artifact.
+          </p>
+        </article>
+        <article>
+          <h2>CI contract</h2>
+          <p>
+            The pipeline runs app tests, validates Loom, runs deterministic Loom
+            tests, regenerates artifacts, and fails on stale guidance.
+          </p>
+        </article>
+      </section>
+
+      <section class="split">
+        <div>
+          <h2>Before Loom</h2>
+          <div class="stack muted">
+            <p>Handwritten agent docs</p>
+            <p>Copy-pasted review checklists</p>
+            <p>No prompt tests</p>
+            <p>No generation trace</p>
+          </div>
+        </div>
+        <div>
+          <h2>After Loom</h2>
+          <div class="stack strong">
+            <p>Generated AI handbook</p>
+            <p>Generated Copilot policy</p>
+            <p>Generated PR template</p>
+            <p>Deterministic tests and trace</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="demo-script">
+        <h2>Live demo script</h2>
+        <ol>
+          <li>Show `src/checkout.js`: a real checkout-risk surface.</li>
+          <li>Run `npm run demo:check`: app tests plus Loom validation/tests.</li>
+          <li>Run `npm run loom:generate`: artifacts and trace are produced.</li>
+          <li>Open the generated files and show the CI gate that prevents drift.</li>
+        </ol>
+      </section>
+    </main>
+  </body>
+</html>

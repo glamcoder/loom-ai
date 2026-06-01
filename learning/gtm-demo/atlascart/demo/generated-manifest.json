@@ -1,0 +1,14 @@
+{
+  "product": "AtlasCart",
+  "service": "checkout-risk-api",
+  "entrypoint": "src/checkout.js",
+  "value": "AI guidance becomes a deterministic, testable build artifact",
+  "artifacts": [
+    "ai/agent-handbook.md",
+    ".github/copilot-instructions.md",
+    ".github/pull_request_template.md",
+    "docs/release-readiness.md",
+    "demo/generated-manifest.json"
+  ],
+  "ciGate": "test + loom validate + loom test + loom generate + git diff"
+}

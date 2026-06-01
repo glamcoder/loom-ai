@@ -1,0 +1,240 @@
+module "atlascart.prompts.governance" {
+  version = "0.1.0"
+}
+
+export prompt "AgentHandbook" {
+  param "product" {
+    type = Text
+    required = true
+  }
+
+  param "service" {
+    type = Symbol
+    required = true
+  }
+
+  param "entrypoint" {
+    type = Path
+    required = true
+  }
+
+  param "language" {
+    type = Text
+    default = "JavaScript"
+  }
+
+  param "test_command" {
+    type = Text
+    default = "npm test"
+  }
+
+  param "owner" {
+    type = Text
+    default = "Revenue Platform"
+  }
+
+  param "compliance_surface" {
+    type = Text
+    default = "checkout risk scoring and payment authorization"
+  }
+
+  returns = Markdown
+
+  template = """
+# {{ product }} AI Agent Handbook
+
+Service: `{{ service }}`
+Owner: {{ owner }}
+Language: {{ language }}
+Primary entrypoint: `{{ entrypoint }}`
+Required verification: `{{ test_command }}`
+
+## Operating rules
+
+- Preserve checkout decisions unless the task explicitly changes risk policy.
+- Treat {{ compliance_surface }} as a regulated surface.
+- Keep risk reasons explainable; never collapse them into opaque scores.
+- Add or update tests for every behavior change.
+- Regenerate Loom-managed AI guidance before opening a PR.
+
+## Agent scope
+
+Agents may edit implementation and tests, but must not bypass verification or
+remove risk explanations from customer-impacting decisions.
+"""
+}
+
+export prompt "CopilotInstructions" {
+  param "product" {
+    type = Text
+    required = true
+  }
+
+  param "entrypoint" {
+    type = Path
+    required = true
+  }
+
+  param "test_command" {
+    type = Text
+    default = "npm test"
+  }
+
+  returns = Markdown
+
+  template = """
+# GitHub Copilot instructions for {{ product }}
+
+When suggesting code:
+
+- Start from `{{ entrypoint }}` and matching tests.
+- Prefer small, reviewable changes.
+- Keep risk decisions deterministic and auditable.
+- Run `{{ test_command }}` before proposing completion.
+- If generated guidance looks stale, run `npm run loom:generate`.
+"""
+}
+
+export prompt "PullRequestTemplate" {
+  param "product" {
+    type = Text
+    required = true
+  }
+
+  param "service" {
+    type = Symbol
+    required = true
+  }
+
+  param "test_command" {
+    type = Text
+    default = "npm test"
+  }
+
+  returns = Markdown
+
+  template = """
+## {{ product }} / `{{ service }}` PR checklist
+
+### Change summary
+
+-
+
+### Risk and customer impact
+
+- [ ] Checkout decisions are unchanged or intentionally documented.
+- [ ] Risk reasons remain explainable.
+- [ ] Edge cases for high value, new accounts, country mismatch, and payment method are covered.
+
+### Verification
+
+- [ ] `{{ test_command }}`
+- [ ] `npm run loom:validate`
+- [ ] `npm run loom:test`
+- [ ] `npm run loom:generate` produced no unexpected diff.
+"""
+}
+
+export prompt "ReleaseReadiness" {
+  param "product" {
+    type = Text
+    required = true
+  }
+
+  param "service" {
+    type = Symbol
+    required = true
+  }
+
+  param "owner" {
+    type = Text
+    default = "Revenue Platform"
+  }
+
+  param "generated_count" {
+    type = Integer
+    default = 5
+  }
+
+  param "confidence" {
+    type = Number
+    default = 0.92
+  }
+
+  returns = Markdown
+
+  template = """
+# {{ product }} release readiness
+
+Service: `{{ service }}`
+Owner: {{ owner }}
+Generated AI-governance artifacts: {{ generated_count }}
+Confidence target: {{ confidence }}
+
+## Release gate
+
+The release is ready when application tests pass, Loom validates the workflow
+graph, deterministic Loom tests pass, and regenerated guidance has no diff.
+
+## Investor demo angle
+
+Loom converts prompt governance from tribal knowledge into a repeatable build
+asset. The same workflow powers local development, review, and CI.
+"""
+}
+
+export prompt "DemoManifest" {
+  param "product" {
+    type = Text
+    required = true
+  }
+
+  param "service" {
+    type = Symbol
+    required = true
+  }
+
+  param "entrypoint" {
+    type = Path
+    required = true
+  }
+
+  param "agent_path" {
+    type = Path
+    required = true
+  }
+
+  param "copilot_path" {
+    type = Path
+    required = true
+  }
+
+  param "pr_path" {
+    type = Path
+    required = true
+  }
+
+  param "release_path" {
+    type = Path
+    required = true
+  }
+
+  returns = Text
+
+  template = """
+{
+  "product": "{{ product }}",
+  "service": "{{ service }}",
+  "entrypoint": "{{ entrypoint }}",
+  "value": "AI guidance becomes a deterministic, testable build artifact",
+  "artifacts": [
+    "{{ agent_path }}",
+    "{{ copilot_path }}",
+    "{{ pr_path }}",
+    "{{ release_path }}",
+    "demo/generated-manifest.json"
+  ],
+  "ciGate": "test + loom validate + loom test + loom generate + git diff"
+}
+"""
+}

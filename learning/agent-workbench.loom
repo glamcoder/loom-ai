@@ -1,0 +1,289 @@
+module "learning.agent_workbench" {
+  version = "0.1.0"
+}
+
+import "./prompts/agent-kit.loom" as agent
+import "./prompts/release-kit.loom" as release
+
+# Demonstrates local private prompts, imported prompt libraries, chained prompt
+# rendering, path helpers, typed params, deterministic writes, and tests.
+
+prompt "AppendVerification" {
+  param "plan" {
+    type = Markdown
+    required = true
+  }
+
+  param "source_file" {
+    type = Path
+    required = true
+  }
+
+  param "source_name" {
+    type = Text
+    required = true
+  }
+
+  param "dry_run" {
+    type = Boolean
+    default = true
+  }
+
+  returns = Markdown
+
+  template = """
+{{ plan }}
+
+## Verification
+
+- Source file: `{{ source_file }}`
+- Source name: `{{ source_name }}`
+- Dry run: {{ dry_run }}
+- Validate the entry module.
+- Compile before running.
+- Run deterministic tests before committing generated artifacts.
+"""
+}
+
+export program "BuildAgentWorkbench" {
+  param "project" {
+    type = Text
+    default = "Loom"
+  }
+
+  param "entrypoint" {
+    type = Path
+    required = true
+  }
+
+  param "surface" {
+    type = Text
+    default = "prompt compiler, module loader, runtime, and tests"
+  }
+
+  param "owner" {
+    type = Text
+    default = "Workflow Platform"
+  }
+
+  param "risk_budget" {
+    type = Integer
+    default = 4
+  }
+
+  param "confidence" {
+    type = Number
+    default = 0.9
+  }
+
+  param "dry_run" {
+    type = Boolean
+    default = true
+  }
+
+  effects = ["fs.write"]
+
+  step "render_frame" {
+    use = agent.SystemFrame
+    with = {
+      project = param.project
+      mode = "learning"
+    }
+  }
+
+  step "render_contract" {
+    use = agent.InputContract
+    with = {
+      entrypoint = param.entrypoint
+      owner = param.owner
+      strict = param.dry_run
+    }
+  }
+
+  step "render_risks" {
+    use = agent.RiskRegister
+    with = {
+      surface = param.surface
+      risk_budget = param.risk_budget
+      confidence = param.confidence
+    }
+  }
+
+  step "compose_plan" {
+    use = agent.WritePlan
+    with = {
+      frame = step.render_frame.output
+      contract = step.render_contract.output
+      risks = step.render_risks.output
+      artifact_name = basename(param.entrypoint) + ".agent.md"
+    }
+  }
+
+  step "append_verification" {
+    use = AppendVerification
+    with = {
+      plan = step.compose_plan.output
+      source_file = param.entrypoint
+      source_name = basename(param.entrypoint)
+      dry_run = param.dry_run
+    }
+  }
+
+  step "write_workbench" {
+    use = fs.write
+    with = {
+      path = dirname(param.entrypoint) + "/" + basename(param.entrypoint) + ".agent.md"
+      content = step.append_verification.output
+    }
+  }
+
+  output "workbench" {
+    type = Markdown
+    from = step.append_verification.output
+  }
+
+  output "workbench_path" {
+    type = Path
+    from = step.write_workbench.output
+  }
+}
+
+export program "BuildReleaseHandoff" {
+  param "service" {
+    type = Text
+    required = true
+  }
+
+  param "version" {
+    type = Symbol
+    required = true
+  }
+
+  param "target_file" {
+    type = Path
+    required = true
+  }
+
+  param "scope" {
+    type = Text
+    default = "release readiness for deterministic AI workflow artifacts"
+  }
+
+  param "owner" {
+    type = Text
+    default = "Release engineering"
+  }
+
+  param "include_security" {
+    type = Boolean
+    default = true
+  }
+
+  param "max_followups" {
+    type = Integer
+    default = 5
+  }
+
+  effects = ["fs.write"]
+
+  step "render_brief" {
+    use = release.ReleaseBrief
+    with = {
+      service = param.service
+      version = param.version
+      target_file = param.target_file
+    }
+  }
+
+  step "render_checklist" {
+    use = release.Checklist
+    with = {
+      scope = param.scope
+      include_security = param.include_security
+      max_followups = param.max_followups
+    }
+  }
+
+  step "compose_handoff" {
+    use = release.Handoff
+    with = {
+      brief = step.render_brief.output
+      checklist = step.render_checklist.output
+      owner = param.owner
+    }
+  }
+
+  step "write_handoff" {
+    use = fs.write
+    with = {
+      path = dirname(param.target_file) + "/RELEASE-HANDOFF.md"
+      content = step.compose_handoff.output
+    }
+  }
+
+  output "handoff" {
+    type = Markdown
+    from = step.compose_handoff.output
+  }
+
+  output "handoff_path" {
+    type = Path
+    from = step.write_handoff.output
+  }
+}
+
+test "build_agent_workbench_chains_imports_and_paths" {
+  program = BuildAgentWorkbench
+
+  with = {
+    project = "Loom"
+    entrypoint = "src/language/parser.ts"
+    risk_budget = 7
+    confidence = 0.95
+    dry_run = false
+  }
+
+  expect {
+    output "workbench" contains "Loom Agent Frame"
+    output "workbench" contains "Risk budget: 7"
+    output "workbench" contains "Source name: `parser.ts`"
+    output "workbench_path" contains "src/language/parser.ts.agent.md"
+    writes file "src/language/parser.ts.agent.md"
+    effects = ["fs.write"]
+  }
+}
+
+test "build_agent_workbench_uses_defaults" {
+  program = BuildAgentWorkbench
+
+  with = {
+    entrypoint = "README.md"
+  }
+
+  expect {
+    output "workbench" contains "Owning team: Workflow Platform"
+    output "workbench" contains "Dry run: true"
+    writes file "./README.md.agent.md"
+    effects = ["fs.write"]
+  }
+}
+
+test "build_release_handoff_composes_release_library" {
+  program = BuildReleaseHandoff
+
+  with = {
+    service = "Prompt Registry"
+    version = "v0.1.0"
+    target_file = "dist/index.js"
+    include_security = true
+    max_followups = 2
+  }
+
+  expect {
+    output "handoff" contains "Prompt Registry Release v0.1.0"
+    output "handoff" contains "Maximum follow-ups: 2"
+    output "handoff_path" contains "dist/RELEASE-HANDOFF.md"
+    writes file "dist/RELEASE-HANDOFF.md"
+    effects = ["fs.write"]
+  }
+}
