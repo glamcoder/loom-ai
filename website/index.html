@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loom - Make for AI workflows</title>
+    <meta
+      name="description"
+      content="Loom is a Git-native workflow language for packaging reusable AI work as deterministic code, artifacts, tests, and traces."
+    />
+    <meta property="og:title" content="Loom - Make for AI workflows" />
+    <meta
+      property="og:description"
+      content="Package reusable AI prompts and agent artifacts as deterministic, testable, traceable code."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/hero-workflow.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#fbfaf7" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <nav class="nav" aria-label="Primary navigation">
+        <div class="nav__inner">
+          <a class="brand" href="#top" aria-label="Loom home">
+            <span class="brand__mark" aria-hidden="true">L</span>
+            <span>Loom</span>
+          </a>
+          <button
+            class="nav__toggle"
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded="false"
+            data-nav-toggle
+          >
+            <span aria-hidden="true"></span>
+          </button>
+          <div class="nav__links" data-nav-links>
+            <a href="#why">Why</a>
+            <a href="#quickstart">Quickstart</a>
+            <a href="#tutorials">Tutorials</a>
+            <a href="#docs">Docs</a>
+            <a class="button button--quiet" href="https://github.com/glamcoder/loom-ai">GitHub</a>
+          </div>
+        </div>
+      </nav>
+
+      <header class="hero" id="top">
+        <div class="hero__inner">
+          <div class="hero__content">
+            <p class="eyebrow">v@@PACKAGE_VERSION@@ deterministic developer preview</p>
+            <h1>Loom</h1>
+            <p class="hero__lead">
+              Make for AI workflows. Loom is a Git-native workflow language for packaging reusable
+              AI work as code. Write `.loom` programs, compile them into agent-ready artifacts, and
+              keep prompts testable, traceable, and reviewable.
+            </p>
+            <div class="hero__actions">
+              <a class="button button--primary" href="#quickstart">Start in 60 seconds</a>
+              <a class="button button--secondary" href="#tutorials">Read tutorials</a>
+            </div>
+            <div class="install" aria-label="Install command">
+              <code id="install-command">npm install -g @@PACKAGE_NAME@@</code>
+              <button
+                class="copy-button"
+                type="button"
+                aria-label="Copy command"
+                data-copy-target="#install-command"
+                data-copied="false"
+              ></button>
+            </div>
+            <div class="hero__meta" aria-label="Project facts">
+              <span>No LLM calls in v0</span>
+              <span>No network calls</span>
+              <span>Apache-2.0</span>
+              <span>CLI command: <strong>loom</strong></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="section section--preview" aria-label="Loom source and trace preview">
+        <div class="section__inner">
+          <div class="hero__preview">
+            <div class="code-window">
+              <div class="window-bar">
+                <span>examples/refactor.loom</span>
+                <span class="window-dots" aria-hidden="true"
+                  ><span></span><span></span><span></span
+                ></span>
+              </div>
+              <pre><code><span class="token-key">export program</span> <span class="token-value">"PrepareRefactor"</span> {
+  <span class="token-key">param</span> <span class="token-value">"method"</span> { type = Symbol; required = true }
+  <span class="token-key">param</span> <span class="token-value">"file"</span>   { type = Path; required = true }
+
+  effects = [<span class="token-value">"fs.write"</span>]
+
+  step <span class="token-value">"render_instructions"</span> {
+    use  = refactor.RefactorMethod
+    with = { method = param.method, file = param.file }
+  }
+
+  step <span class="token-value">"write_agent_file"</span> {
+    use  = fs.write
+    with = {
+      path    = dirname(param.file) + <span class="token-value">"/AGENTS.md"</span>
+      content = step.render_instructions.output
+    }
+  }
+}</code></pre>
+            </div>
+            <aside class="trace-panel" aria-label="Generated outputs">
+              <div class="window-bar">
+                <span>What you get</span>
+                <span class="muted">deterministic</span>
+              </div>
+              <div class="trace-panel__body">
+                <div class="trace-row">
+                  <span class="trace-icon" aria-hidden="true">1</span>
+                  <div>
+                    <strong>Agent artifacts</strong>
+                    <span>Generate `AGENTS.md`, review briefs, prompt libraries.</span>
+                  </div>
+                </div>
+                <div class="trace-row">
+                  <span class="trace-icon" aria-hidden="true">2</span>
+                  <div>
+                    <strong>Program IR</strong>
+                    <span>Inspect provider-neutral JSON before anything runs.</span>
+                  </div>
+                </div>
+                <div class="trace-row">
+                  <span class="trace-icon" aria-hidden="true">3</span>
+                  <div>
+                    <strong>Run traces</strong>
+                    <span>Know exactly what generated each file and from which inputs.</span>
+                  </div>
+                </div>
+                <div class="trace-row">
+                  <span class="trace-icon" aria-hidden="true">4</span>
+                  <div>
+                    <strong>CI tests</strong>
+                    <span>Assert outputs, writes, and effects without touching disk.</span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <main>
+        <section class="section section--tight" id="why">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">Why Loom exists</p>
+              <h2>AI instructions deserve build-system discipline.</h2>
+              <p class="section__lead">
+                Copy-pasted prompts are hard to review, hard to reuse, and hard to trust. Loom
+                treats prompt and artifact generation as source code: typed inputs, imports,
+                effects, tests, and traces.
+              </p>
+            </div>
+            <div class="problem-grid">
+              <article class="problem-item">
+                <span>Before</span>
+                <h3>Prompt logic drifts</h3>
+                <p>
+                  Instructions hide in docs, Slack, editor configs, and old PRs. Each repo becomes a
+                  one-off snowflake.
+                </p>
+              </article>
+              <article class="problem-item">
+                <span>Before</span>
+                <h3>Placeholders are manual</h3>
+                <p>
+                  Humans remember to swap `{{ method }}` and hope generated files still match their
+                  source.
+                </p>
+              </article>
+              <article class="problem-item">
+                <span>After</span>
+                <h3>Artifacts become reproducible</h3>
+                <p>
+                  Loom compiles `.loom` source into files, IR, and traces that can be checked in,
+                  reviewed, and gated in CI.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section--ink" aria-label="Workflow">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">How it works</p>
+              <h2>Write, validate, run, verify.</h2>
+              <p class="section__lead">
+                Loom v0 is deliberately deterministic: no provider SDKs, no model calls, and no
+                network calls. That makes it reliable enough for reviews and CI today.
+              </p>
+            </div>
+            <div class="workflow">
+              <div class="workflow__step">
+                <strong>1. Write `.loom`</strong>
+                <p>Define prompt modules, programs, params, steps, effects, and tests.</p>
+              </div>
+              <div class="workflow__step">
+                <strong>2. Validate</strong>
+                <p>Catch parse, import, type, reference, and effect errors early.</p>
+              </div>
+              <div class="workflow__step">
+                <strong>3. Run</strong>
+                <p>Render prompts, write declared files, and emit trace metadata.</p>
+              </div>
+              <div class="workflow__step">
+                <strong>4. Test in CI</strong>
+                <p>Run deterministic workflow tests with an in-memory filesystem.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="quickstart">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">60-second quickstart</p>
+              <h2>Install the CLI, then compile your first workflow.</h2>
+            </div>
+            <div class="quickstart">
+              <div>
+                <ul class="checklist">
+                  <li>
+                    <span>
+                      Install the npm package named `loom-ai`. The command you run after installing
+                      is `loom`.
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      Validate a module before running it. Validation writes nothing and reports
+                      clear coded diagnostics.
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      Compile to provider-neutral JSON when you want to inspect the execution plan
+                      in review.
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      Run tests in CI. They execute fully in memory, so they are deterministic and
+                      safe.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <div class="command-panel">
+                <div class="window-bar">
+                  <span>terminal</span>
+                  <span class="muted">from docs/getting-started.md</span>
+                </div>
+                <pre><code>npm install -g loom-ai
+
+loom validate examples/refactor.loom
+
+loom compile examples/refactor.loom PrepareRefactor \
+  --method calculateTotalCost \
+  --file src/billing/costs.ts
+
+loom run examples/refactor.loom PrepareRefactor \
+  --method calculateTotalCost \
+  --file src/billing/costs.ts
+
+loom test examples/refactor.loom</code></pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-label="Features">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">What ships in v0</p>
+              <h2>A small language for repeatable AI work.</h2>
+            </div>
+            <div class="feature-grid">
+              <article class="feature">
+                <span>Modules</span>
+                <h3>Local imports and exports</h3>
+                <p>
+                  Split reusable prompts from workflows and import only exported symbols through
+                  relative paths.
+                </p>
+              </article>
+              <article class="feature">
+                <span>Params</span>
+                <h3>Typed inputs</h3>
+                <p>
+                  Required params and defaults make placeholder substitution explicit and validated.
+                </p>
+              </article>
+              <article class="feature">
+                <span>Effects</span>
+                <h3>Auditable side effects</h3>
+                <p>Programs must declare effects like `fs.write` before they can write files.</p>
+              </article>
+              <article class="feature">
+                <span>Tests</span>
+                <h3>Deterministic assertions</h3>
+                <p>
+                  Assert rendered outputs, expected file writes, and declared effects without
+                  touching disk.
+                </p>
+              </article>
+              <article class="feature">
+                <span>Traces</span>
+                <h3>Generated artifact history</h3>
+                <p>
+                  Each run records inputs, steps, outputs, files written, and diagnostics in
+                  `.loom/runs`.
+                </p>
+              </article>
+              <article class="feature">
+                <span>IR</span>
+                <h3>Provider-neutral plans</h3>
+                <p>
+                  `loom compile` prints JSON that future model providers can execute without
+                  changing source semantics.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section--tight" id="tutorials">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">Tutorials</p>
+              <h2>Practical recipes, not abstract demos.</h2>
+              <p class="section__lead">
+                Start with the exact workflows Loom is good at today: agent files, PR review
+                prompts, prompt libraries, and CI checks.
+              </p>
+            </div>
+            <div class="tutorial-grid">
+              <article class="tutorial">
+                <span class="tutorial__tag">Artifact</span>
+                <h3>Generate an AGENTS.md</h3>
+                <p>
+                  Build a reusable workflow that turns a method, file, and goal into an agent brief.
+                </p>
+                <a
+                  href="https://github.com/glamcoder/loom-ai/blob/main/docs/tutorials/generate-agents-md.md"
+                  >Open tutorial</a
+                >
+              </article>
+              <article class="tutorial">
+                <span class="tutorial__tag">Review</span>
+                <h3>Reusable PR review</h3>
+                <p>
+                  Package review instructions once and reuse them across repos without copy-paste
+                  drift.
+                </p>
+                <a
+                  href="https://github.com/glamcoder/loom-ai/blob/main/docs/tutorials/reusable-pr-review.md"
+                  >Open tutorial</a
+                >
+              </article>
+              <article class="tutorial">
+                <span class="tutorial__tag">Library</span>
+                <h3>Build a prompt library</h3>
+                <p>
+                  Split prompts into modules, export shared building blocks, and import them from
+                  workflows.
+                </p>
+                <a
+                  href="https://github.com/glamcoder/loom-ai/blob/main/docs/tutorials/build-a-prompt-library.md"
+                  >Open tutorial</a
+                >
+              </article>
+              <article class="tutorial">
+                <span class="tutorial__tag">CI</span>
+                <h3>Run Loom checks in CI</h3>
+                <p>
+                  Validate `.loom` files, run deterministic tests, and catch stale generated
+                  artifacts.
+                </p>
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/tutorials/ci-checks.md"
+                  >Open tutorial</a
+                >
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="docs">
+          <div class="section__inner">
+            <div class="docs-band">
+              <div>
+                <p class="eyebrow">Documentation</p>
+                <h2>Everything needed to evaluate Loom.</h2>
+                <p class="section__lead">
+                  The public site points to the canonical docs in this repo so launch visitors can
+                  move from pitch to implementation details without guessing.
+                </p>
+              </div>
+              <div class="docs-links" aria-label="Documentation links">
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/README.md">README</a>
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/getting-started.md"
+                  >Getting started</a
+                >
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/concepts.md"
+                  >Concepts</a
+                >
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/cli.md"
+                  >CLI reference</a
+                >
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/language-v0.md"
+                  >Language v0</a
+                >
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/testing.md">Testing</a>
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/traces.md">Traces</a>
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/examples-catalog.md"
+                  >Examples</a
+                >
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/comparisons.md"
+                  >Comparisons</a
+                >
+                <a href="https://github.com/glamcoder/loom-ai/blob/main/docs/roadmap.md">Roadmap</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">Positioning</p>
+              <h2>Not an agent runtime. Not an eval harness. A build layer.</h2>
+              <p class="section__lead">
+                Loom complements tools like BAML, LangGraph, DSPy, promptfoo, and coding agents by
+                giving them clean, versioned, tested inputs.
+              </p>
+            </div>
+            <div class="comparison-grid">
+              <article class="comparison">
+                <h3>BAML</h3>
+                <p>
+                  BAML is for typed LLM functions inside your application. Loom v0 makes no model
+                  calls; it packages reusable AI artifacts and workflows.
+                </p>
+              </article>
+              <article class="comparison">
+                <h3>LangGraph</h3>
+                <p>
+                  LangGraph orchestrates stateful agents at runtime. Loom compiles deterministic
+                  artifacts and plans ahead of time.
+                </p>
+              </article>
+              <article class="comparison">
+                <h3>promptfoo</h3>
+                <p>
+                  promptfoo evaluates prompt and model behavior. Loom tests deterministic prompt
+                  generation and file artifacts.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section--ink">
+          <div class="section__inner">
+            <div class="section__head">
+              <p class="eyebrow">Roadmap</p>
+              <h2>Deterministic first, model-aware later.</h2>
+            </div>
+            <div class="roadmap">
+              <div class="roadmap-step">
+                <strong>v0</strong>
+                <p>Deterministic artifact compiler, tests, traces, and CLI.</p>
+              </div>
+              <div class="roadmap-step">
+                <strong>v0.x</strong>
+                <p>Docs, examples, CI hardening, and CLI quality-of-life.</p>
+              </div>
+              <div class="roadmap-step">
+                <strong>v1</strong>
+                <p>`llm.complete` with a mocked provider first.</p>
+              </div>
+              <div class="roadmap-step">
+                <strong>v2</strong>
+                <p>Parse and validate helpers for structured model output.</p>
+              </div>
+              <div class="roadmap-step">
+                <strong>v3+</strong>
+                <p>Workflow control, packages, and ecosystem conventions.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section__inner">
+            <div class="cta">
+              <div>
+                <p class="eyebrow">Launch ready</p>
+                <h2>Try Loom on one prompt artifact this week.</h2>
+                <p class="section__lead">
+                  The best first use case is small and painful: an agent brief, a PR review
+                  instruction, or a prompt library that keeps drifting.
+                </p>
+              </div>
+              <div class="hero__actions">
+                <a class="button button--primary" href="#quickstart">Install Loom</a>
+                <a class="button button--secondary" href="https://github.com/glamcoder/loom-ai"
+                  >Star on GitHub</a
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="footer__inner">
+          <span>Loom is a working name. Package: @@PACKAGE_NAME@@.</span>
+          <div class="footer__links">
+            <a href="https://github.com/glamcoder/loom-ai/blob/main/LICENSE">Apache-2.0</a>
+            <a href="https://github.com/glamcoder/loom-ai/blob/main/CONTRIBUTING.md"
+              >Contributing</a
+            >
+            <a href="https://github.com/glamcoder/loom-ai/blob/main/SECURITY.md">Security</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>

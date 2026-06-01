@@ -4,6 +4,9 @@
 # Loom run output (traces, artifacts)
 .loom/
 
+# Static website output
+site/
+
 # Logs
 logs
 *.log

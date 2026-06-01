@@ -36,3 +36,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Build website
+        run: npm run website:build
+
+      - name: Upload website artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-node-${{ matrix.node-version }}
+          path: site

@@ -24,6 +24,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "website:build": "node tools/build-website.mjs",
     "dev": "tsx src/cli/index.ts",
     "loom": "tsx src/cli/index.ts",
     "test": "vitest run",
