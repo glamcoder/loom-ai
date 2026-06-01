@@ -41,7 +41,10 @@ program = PrepareRefactor
 
 ### `with`
 
-Supplies parameter values. Params that have defaults may be omitted; required params must be provided.
+Supplies parameter values. `with` is optional when the target program has no
+required params or when defaults cover every required value. When present, its
+values must be literals (`"text"`, numbers, `true`, `false`); tests do not
+evaluate `param.*`, `step.*`, or function-call expressions inside `with`.
 
 ```hcl
 with = {
@@ -72,7 +75,9 @@ writes file "src/billing/AGENTS.md"
 
 #### `effects` assertion
 
-Asserts the program declares exactly the listed effects. Use it to stop a workflow from quietly gaining new side effects.
+Asserts the program declares exactly the listed effects. Order does not matter,
+but missing or extra effects fail the assertion. Use it to stop a workflow from
+quietly gaining new side effects.
 
 ```hcl
 effects = ["fs.write"]
@@ -177,4 +182,4 @@ Because `loom test` exits non-zero on failure, a single step gates your pipeline
 - run: loom test examples/refactor.loom
 ```
 
-For validating *and* testing every workflow, plus checking that committed artifacts are up to date, see [docs/tutorials/ci-checks.md](tutorials/ci-checks.md).
+For validating _and_ testing every workflow, plus checking that committed artifacts are up to date, see [docs/tutorials/ci-checks.md](tutorials/ci-checks.md).

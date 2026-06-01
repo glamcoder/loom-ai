@@ -259,10 +259,7 @@ export function findAttribute(attributes: Attribute[], name: string): Attribute 
   return attributes.find((a) => a.name === name);
 }
 
-export function findDefinition(
-  file: ModuleFile,
-  name: string,
-): Definition | undefined {
+export function findDefinition(file: ModuleFile, name: string): Definition | undefined {
   return file.definitions.find((d) => d.name === name);
 }
 

@@ -24,7 +24,7 @@ program "SummarizeText" {
   effects = ["llm.complete"]
 
   step "build_prompt" {
-    use = prompt.SummarizeText
+    use = SummarizeTextPrompt
     with = { input = param.input }
   }
 

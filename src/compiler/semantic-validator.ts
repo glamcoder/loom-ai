@@ -73,6 +73,15 @@ export function validateAndLowerParam(param: ParamBlock): ParamIR {
   const defaultAttr = findAttribute(param.attributes, "default");
   let defaultValue: import("../stdlib/types").LoomScalar | null = null;
   if (defaultAttr) {
+    if (required) {
+      throw LoomError.single(
+        "semantic",
+        "LOOM_SEMANTIC_PARAM_REQUIRED_DEFAULT",
+        `Param "${param.name}" cannot set both "required = true" and "default"`,
+        defaultAttr.value.span,
+        `Remove "required = true" or remove the default value.`,
+      );
+    }
     const dv = defaultAttr.value;
     if (
       dv.kind !== "StringLiteral" &&

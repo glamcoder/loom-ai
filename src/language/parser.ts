@@ -120,8 +120,7 @@ class Parser {
       }
 
       // Anything that is not a recognized top-level keyword is a hard parse error.
-      const isTopLevelKeyword =
-        tok.kind === "Identifier" && TOP_LEVEL_KEYWORDS.includes(tok.value);
+      const isTopLevelKeyword = tok.kind === "Identifier" && TOP_LEVEL_KEYWORDS.includes(tok.value);
       if (!isTopLevelKeyword) {
         throw LoomError.single(
           "parse",
@@ -178,11 +177,7 @@ class Parser {
     }
 
     const endTok = this.peek();
-    const fileSpan = span(
-      this.filePath,
-      startTok.span.start,
-      endTok.span.end,
-    );
+    const fileSpan = span(this.filePath, startTok.span.start, endTok.span.end);
 
     return {
       kind: "ModuleFile",
@@ -774,4 +769,3 @@ export function parseModule(source: string, filePath: string): ModuleFile {
   const parser = new Parser(tokens, filePath);
   return parser.parseModule();
 }
-

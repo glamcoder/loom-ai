@@ -50,6 +50,8 @@ git diff --exit-code src/billing/AGENTS.md
 ```
 
 `git diff --exit-code` returns non-zero if the regenerated artifact differs from what's committed — i.e. someone changed the prompt but didn't re-run Loom.
+If the artifact might be missing entirely, also check `git status --porcelain`
+for that path so untracked generated files fail the job too.
 
 ## GitHub Actions snippet
 
@@ -84,6 +86,7 @@ jobs:
       - name: Test workflows
         run: |
           loom test examples/refactor.loom
+          loom test examples/review.loom
           loom test examples/prompt-library.loom
 
       # Optional: fail if committed artifacts are stale
@@ -93,6 +96,7 @@ jobs:
             --method calculateTotalCost --file src/billing/costs.ts
           rm -rf .loom
           git diff --exit-code src/billing/AGENTS.md
+          test -z "$(git status --porcelain -- src/billing/AGENTS.md)"
 ```
 
 ## What to commit to Git

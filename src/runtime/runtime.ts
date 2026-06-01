@@ -235,8 +235,7 @@ export function runProgram(ir: ProgramIR, options?: RunOptions): RunResult {
       // Assemble a failure trace with all successful steps so far plus the
       // failed step. Partial outputs are empty because we never reached the
       // output-emission phase.
-      const failureDiagnostics =
-        err instanceof LoomError ? err.diagnostics : [];
+      const failureDiagnostics = err instanceof LoomError ? err.diagnostics : [];
 
       const failureTrace = buildTrace(
         [...traceSteps, traceStep],
@@ -258,11 +257,7 @@ export function runProgram(ir: ProgramIR, options?: RunOptions): RunResult {
         throw err;
       } else {
         // Wrap non-LoomError failures so callers always get a consistent type.
-        const wrapped = LoomError.single(
-          "runtime",
-          "LOOM_RUNTIME_STEP_FAILED",
-          message,
-        );
+        const wrapped = LoomError.single("runtime", "LOOM_RUNTIME_STEP_FAILED", message);
         (wrapped as LoomError & { tracePath?: string }).tracePath = tracePath;
         throw wrapped;
       }

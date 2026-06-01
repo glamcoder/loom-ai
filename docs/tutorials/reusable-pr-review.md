@@ -8,7 +8,7 @@ A workflow that turns a diff and a target path into a `REVIEW.md` — agent-agno
 
 `examples/prompts/review.loom` — the reusable review prompt:
 
-```hcl
+````hcl
 module "prompts.review" {
   version = "0.1.0"
 }
@@ -33,7 +33,7 @@ export prompt "ReviewPullRequest" {
 
 ```diff
 {{ diff }}
-```
+````
 
 ## Review Focus
 
@@ -48,9 +48,10 @@ export prompt "ReviewPullRequest" {
 - Flag security or performance concerns if present.
 - Keep feedback specific and actionable.
 - If the change looks good, say so clearly.
-"""
-}
-```
+  """
+  }
+
+````
 
 `examples/review.loom` — the workflow that renders the prompt and writes `REVIEW.md`:
 
@@ -116,7 +117,7 @@ test "prepare_review_renders_review_file" {
     effects = ["fs.write"]
   }
 }
-```
+````
 
 ### What this teaches
 

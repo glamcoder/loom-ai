@@ -1,6 +1,6 @@
 # Architecture
 
-This page covers how Loom v0 is built. For how to *use* it, see [docs/getting-started.md](getting-started.md) and [docs/cli.md](cli.md).
+This page covers how Loom v0 is built. For how to _use_ it, see [docs/getting-started.md](getting-started.md) and [docs/cli.md](cli.md).
 
 ## Pipeline
 
@@ -44,7 +44,7 @@ Imports are **local and relative only**. The module loader resolves each `import
 
 - Imports must appear before other declarations.
 - Only `export`ed symbols are importable.
-- Import paths must start with `./` or `../` (`LOOM_MODULE_IMPORT_NOT_RELATIVE`); remote imports are rejected.
+- Import paths must start with `./` or `../` (`LOOM_MODULE_NON_RELATIVE_IMPORT`); remote imports are rejected separately as `LOOM_MODULE_REMOTE_IMPORT`.
 
 Circular imports are detected and reported rather than causing infinite loops.
 
@@ -77,7 +77,7 @@ This is what makes tests hermetic: the same executors run in both modes, but tes
 
 ## Test runner
 
-The test runner parses the file, compiles the program named by each `test` block, and runs it against the **in-memory filesystem** with the `with` params and tracing disabled. It then evaluates the `expect` assertions (`output "name" contains`, `writes file`, `effects =`), reports per-test results, and returns pass/fail counts. The CLI prints those and exits non-zero if any test fails.
+The test runner parses the file, compiles the program named by each `test` block, and runs it against the **in-memory filesystem** with the `with` params and tracing disabled. `with` is optional when defaults cover the program inputs. It then evaluates the `expect` assertions (`output "name" contains`, `writes file`, and exact-set `effects =`), reports per-test results, and returns pass/fail counts. The CLI prints those and exits non-zero if any test fails.
 
 ## Why no provider SDKs in v0
 

@@ -137,10 +137,7 @@ module "main" {}
 import "./badlib.loom" as badlib`,
     });
 
-    expectCode(
-      () => validateModule("/vfs/main.loom", { readFile: vfs }),
-      "LOOM_TYPE_UNKNOWN_TYPE",
-    );
+    expectCode(() => validateModule("/vfs/main.loom", { readFile: vfs }), "LOOM_TYPE_UNKNOWN_TYPE");
   });
 });
 

@@ -163,6 +163,31 @@ describe("defaults applied", () => {
     });
     expect(ir.inputs["goal"]).toBe("Improve readability without changing behavior.");
   });
+
+  it("throws LOOM_SEMANTIC_PARAM_REQUIRED_DEFAULT when required and default are both set", () => {
+    const vfs: Record<string, string> = {
+      "/vfs/main.loom": `
+module "main" { version = "1.0.0" }
+
+export program "BadParam" {
+  param "name" {
+    type = Text
+    required = true
+    default = "Ada"
+  }
+
+  output "result" {
+    type = Text
+    from = param.name
+  }
+}`,
+    };
+
+    expectCode(
+      () => validateModule("/vfs/main.loom", { readFile: makeVfs(vfs) }),
+      "LOOM_SEMANTIC_PARAM_REQUIRED_DEFAULT",
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------

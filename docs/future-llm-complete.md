@@ -60,6 +60,21 @@ step "validate_result" {
 ## Future DSL shape
 
 ```hcl
+prompt "SummarizeTextPrompt" {
+  param "input" {
+    type     = Text
+    required = true
+  }
+
+  returns = Text
+
+  template = """
+Summarize the following text:
+
+{{ input }}
+"""
+}
+
 program "SummarizeText" {
   param "input" {
     type     = Text
@@ -69,7 +84,7 @@ program "SummarizeText" {
   effects = ["llm.complete"]
 
   step "build_prompt" {
-    use  = prompt.SummarizeText
+    use  = SummarizeTextPrompt
     with = { input = param.input }
   }
 
@@ -127,7 +142,7 @@ When `llm.complete` is eventually implemented, every invocation will be recorded
   "durationMs": 1234,
   "provider": "mock",
   "model": "mock-v1",
-  "traceId": "..."
+  "traceId": "...",
 }
 ```
 

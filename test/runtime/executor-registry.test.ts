@@ -43,7 +43,9 @@ function makeOutputIR(): OutputIR {
   };
 }
 
-function makeCtx(overrides?: Partial<ExecutorContext>): ExecutorContext & { written: WrittenFile[] } {
+function makeCtx(
+  overrides?: Partial<ExecutorContext>,
+): ExecutorContext & { written: WrittenFile[] } {
   const written: WrittenFile[] = [];
   const memfs = new MemoryFileSystem();
   return {
@@ -86,9 +88,7 @@ describe("ExecutorRegistry: registration and lookup", () => {
   it("throws when registering the same operation twice", () => {
     const registry = new ExecutorRegistry();
     registry.register(promptRenderExecutor);
-    expect(() => registry.register(promptRenderExecutor)).toThrow(
-      /already registered/,
-    );
+    expect(() => registry.register(promptRenderExecutor)).toThrow(/already registered/);
   });
 
   it("returns undefined for unregistered operations", () => {

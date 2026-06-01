@@ -110,13 +110,13 @@ export program "TeamGuide" {
     use  = fs.write
     with = {
       path    = "GUIDE.md"
-      content = step.render_header.output
+      content = step.render_header.output + step.render_footer.output
     }
   }
 
   output "guide" {
     type = Markdown
-    from = step.render_header.output
+    from = step.render_header.output + step.render_footer.output
   }
 }
 
@@ -156,6 +156,7 @@ test "team_guide_renders_header_for_team" {
 
   expect {
     output "guide" contains "Audience: Billing"
+    output "guide" contains "Ask the Platform team"
     writes file "GUIDE.md"
     effects = ["fs.write"]
   }
@@ -176,9 +177,10 @@ test "onboarding_targets_new_hires" {
 
 - **Shared prompt module** — `prompts.common` is a library other modules depend on.
 - **Exported prompt** — `Header` and `Signoff` are `export`ed, so importers can use `common.Header`.
-- **Private helper prompt** — `Disclaimer` is *not* exported; it stays internal to the library. `Footer` shows the same idea locally: a module-local prompt referenced by bare name (`use = Footer`), no alias.
+- **Private helper prompt** — `Disclaimer` is _not_ exported; it stays internal to the library. `Footer` shows the same idea locally: a module-local prompt referenced by bare name (`use = Footer`), no alias.
 - **Importing with aliases** — `import "./prompts/common.loom" as common`, then `common.Header`.
 - **Composing multiple workflows from one library** — `TeamGuide` and `OnboardingDoc` both reuse `common.Header` with different inputs and write different files.
+- **Chaining prompt outputs** — `TeamGuide` renders both `Header` and `Footer`, then concatenates their outputs before writing the guide.
 
 ## Command sequence
 

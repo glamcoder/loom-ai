@@ -30,10 +30,7 @@ function parse(source: string) {
 // ---------------------------------------------------------------------------
 
 describe("canonical example: examples/refactor.loom", () => {
-  const source = readFileSync(
-    new URL("../../examples/refactor.loom", import.meta.url),
-    "utf-8",
-  );
+  const source = readFileSync(new URL("../../examples/refactor.loom", import.meta.url), "utf-8");
   const ast = parseModule(source, "examples/refactor.loom");
 
   it("parses successfully", () => {
@@ -107,7 +104,7 @@ describe("canonical example: examples/refactor.loom", () => {
     expect(ref.parts).toEqual(["refactor", "RefactorMethod"]);
   });
 
-  it("parses dirname(param.file) + \"/AGENTS.md\" as BinaryExpression", () => {
+  it('parses dirname(param.file) + "/AGENTS.md" as BinaryExpression', () => {
     const prog = ast.definitions[0] as ProgramDefinition;
     const step = prog.steps[1]; // write_agent_file
     const withAttr = step.attributes.find((a) => a.name === "with");
@@ -163,9 +160,7 @@ describe("canonical example: examples/refactor.loom", () => {
 
   it("test expect block has effects attribute", () => {
     const test = ast.tests[0] as TestBlock;
-    const effectsAttr = test.expect!.attributes.find(
-      (a) => a.name === "effects",
-    );
+    const effectsAttr = test.expect!.attributes.find((a) => a.name === "effects");
     expect(effectsAttr).toBeDefined();
     expect(effectsAttr!.value.kind).toBe("ArrayExpression");
   });
@@ -388,14 +383,12 @@ test "my_test" {
     ) as WritesFileAssertion;
     expect(writesAssert.path).toBe("output/file.txt");
 
-    const effectsAttr = test.expect!.attributes.find(
-      (a) => a.name === "effects",
-    );
+    const effectsAttr = test.expect!.attributes.find((a) => a.name === "effects");
     expect(effectsAttr).toBeDefined();
   });
 });
 
-describe("expression: dirname(param.file) + \"/AGENTS.md\"", () => {
+describe('expression: dirname(param.file) + "/AGENTS.md"', () => {
   it("parses as BinaryExpression(FunctionCall, StringLiteral)", () => {
     const src = `module "a" { version = "1" }
 export program "P" {
@@ -427,7 +420,7 @@ export program "P" {
 });
 
 describe("effects arrays", () => {
-  it("parses effects = [\"fs.write\"] as ArrayExpression", () => {
+  it('parses effects = ["fs.write"] as ArrayExpression', () => {
     const src = `module "a" { version = "1" }
 export program "P" {
   effects = ["fs.write", "artifact.emit"]
@@ -481,9 +474,9 @@ describe("syntax error cases", () => {
   });
 
   it("throws LoomError for multiple module blocks", () => {
-    expect(() =>
-      parse(`module "a" { version = "1" } module "b" { version = "2" }`),
-    ).toThrow(LoomError);
+    expect(() => parse(`module "a" { version = "1" } module "b" { version = "2" }`)).toThrow(
+      LoomError,
+    );
     try {
       parse(`module "a" { version = "1" } module "b" { version = "2" }`);
     } catch (e) {
@@ -548,11 +541,17 @@ test "t" {
   });
 
   it("fails when an import appears before the module block", () => {
-    expectCode(`import "./p.loom" as p\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+    expectCode(
+      `import "./p.loom" as p\nmodule "wf" { version = "1" }`,
+      "LOOM_PARSE_MODULE_NOT_FIRST",
+    );
   });
 
   it("fails when a prompt appears before the module block", () => {
-    expectCode(`prompt "P" { template = "x" }\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+    expectCode(
+      `prompt "P" { template = "x" }\nmodule "wf" { version = "1" }`,
+      "LOOM_PARSE_MODULE_NOT_FIRST",
+    );
   });
 
   it("fails when a program appears before the module block", () => {
@@ -560,7 +559,10 @@ test "t" {
   });
 
   it("fails when a test appears before the module block", () => {
-    expectCode(`test "t" { program = P }\nmodule "wf" { version = "1" }`, "LOOM_PARSE_MODULE_NOT_FIRST");
+    expectCode(
+      `test "t" { program = P }\nmodule "wf" { version = "1" }`,
+      "LOOM_PARSE_MODULE_NOT_FIRST",
+    );
   });
 
   it("fails when an import appears after a prompt/program definition", () => {
@@ -574,6 +576,9 @@ test "t" {
   });
 
   it("still fails for multiple module blocks", () => {
-    expectCode(`module "a" { version = "1" } module "b" { version = "2" }`, "LOOM_PARSE_MULTIPLE_MODULE_BLOCKS");
+    expectCode(
+      `module "a" { version = "1" } module "b" { version = "2" }`,
+      "LOOM_PARSE_MULTIPLE_MODULE_BLOCKS",
+    );
   });
 });
