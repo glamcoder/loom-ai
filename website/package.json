@@ -1,0 +1,18 @@
+{
+  "name": "loom-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Static marketing + documentation site for Loom. Generated from the repo's docs.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check-links.mjs",
+    "build:check": "node scripts/build.mjs && node scripts/check-links.mjs",
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0"
+  }
+}

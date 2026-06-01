@@ -209,6 +209,24 @@ Tutorials:
 
 Directional and subject to change based on feedback. See [docs/roadmap.md](docs/roadmap.md).
 
+## Website
+
+The project site (landing page + rendered docs) lives in [`website/`](website/)
+and is published to GitHub Pages at **https://glamcoder.github.io/loom-ai/**.
+
+Every `/docs` page on the site is generated from the Markdown in [`docs/`](docs/),
+so there is a single source of truth. To work on it:
+
+```bash
+cd website
+npm install
+npm run dev        # build + serve at http://localhost:4321
+```
+
+CI builds and link-checks the site on every push and PR
+([`.github/workflows/website.yml`](.github/workflows/website.yml)) and deploys
+it on merge to `main`. See [website/README.md](website/README.md).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Security policy: [SECURITY.md](SECURITY.md). Changes: [CHANGELOG.md](CHANGELOG.md).
