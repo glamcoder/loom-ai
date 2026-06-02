@@ -4,6 +4,7 @@
   "description": "Loom AI (working name): a Git-native workflow language for packaging reusable AI work as code. v0 is a deterministic compiler/runtime.",
   "type": "module",
   "homepage": "https://loomai.glamcoder.org/",
+  "repository": "github:glamcoder/loom-ai",
   "bin": {
     "loom": "dist/index.js"
   },
