@@ -1,5 +1,5 @@
 /**
- * Loom v0 deterministic test runner.
+ * Loom AI v0 deterministic test runner.
  *
  * Executes `test` blocks found in a .loom entry file against an in-memory
  * filesystem — no disk writes, no LLM calls, fully deterministic.

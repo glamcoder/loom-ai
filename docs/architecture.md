@@ -1,6 +1,6 @@
 # Architecture
 
-This page covers how Loom v0 is built. For how to _use_ it, see [docs/getting-started.md](getting-started.md) and [docs/cli.md](cli.md).
+This page covers how Loom AI v0 is built. For how to _use_ it, see [docs/getting-started.md](getting-started.md) and [docs/cli.md](cli.md).
 
 ## Pipeline
 
@@ -36,7 +36,7 @@ This page covers how Loom v0 is built. For how to _use_ it, see [docs/getting-st
 
 ## Custom parser
 
-Loom uses a hand-written **lexer** and **recursive-descent parser** rather than a parser generator. This keeps the toolchain dependency-light, gives precise control over diagnostics, and attaches **source locations** to AST nodes so errors can point at the offending construct. The parser also enforces structural rules — e.g. the `module` block must come first (`LOOM_PARSE_MODULE_NOT_FIRST`) and imports must precede definitions (`LOOM_PARSE_IMPORT_AFTER_DEFINITION`). The AST model is plain TypeScript data describing the module, imports, prompts, programs, steps, outputs, and tests.
+Loom AI uses a hand-written **lexer** and **recursive-descent parser** rather than a parser generator. This keeps the toolchain dependency-light, gives precise control over diagnostics, and attaches **source locations** to AST nodes so errors can point at the offending construct. The parser also enforces structural rules — e.g. the `module` block must come first (`LOOM_PARSE_MODULE_NOT_FIRST`) and imports must precede definitions (`LOOM_PARSE_IMPORT_AFTER_DEFINITION`). The AST model is plain TypeScript data describing the module, imports, prompts, programs, steps, outputs, and tests.
 
 ## Module graph
 

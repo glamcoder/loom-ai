@@ -6,7 +6,7 @@
 
 ## Black-box LLM semantics
 
-Loom treats every language model as an opaque black box. The runtime does not have access to model internals, logits, activations, attention weights, or hidden reasoning steps. This is a deliberate architectural constraint, not a limitation to be worked around.
+Loom AI treats every language model as an opaque black box. The runtime does not have access to model internals, logits, activations, attention weights, or hidden reasoning steps. This is a deliberate architectural constraint, not a limitation to be worked around.
 
 The design principle: **the model receives text, returns text, and the runtime is responsible for everything else.**
 
@@ -28,7 +28,7 @@ No assumptions are made about:
 - Provider-specific capabilities or parameters.
 - Deterministic or reproducible output.
 
-All structured data extraction, schema validation, parsing, retries, type checking, and orchestration happens **outside the model**, in explicit Loom steps after `llm.complete` returns.
+All structured data extraction, schema validation, parsing, retries, type checking, and orchestration happens **outside the model**, in explicit Loom AI steps after `llm.complete` returns.
 
 ---
 
@@ -104,7 +104,7 @@ program "SummarizeText" {
 
 ## Provider adapters live outside core
 
-The Loom core runtime will never import a provider SDK. Provider adapters are external implementations of a stable interface:
+The Loom AI core runtime will never import a provider SDK. Provider adapters are external implementations of a stable interface:
 
 ```ts
 export interface LlmProvider {

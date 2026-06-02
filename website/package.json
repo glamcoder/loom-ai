@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Static marketing + documentation site for Loom. Generated from the repo's docs.",
+  "description": "Static marketing + documentation site for Loom AI. Generated from the repo's docs.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/check-links.mjs",

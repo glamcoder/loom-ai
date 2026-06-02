@@ -1,16 +1,16 @@
-# Main Implementation Prompt: Loom v0
+# Main Implementation Prompt: Loom AI v0
 
-You are implementing **Loom v0**, a Git-native workflow language for packaging reusable AI work as code.
+You are implementing **Loom AI v0**, a Git-native workflow language for packaging reusable AI work as code.
 
-Loom is currently a working name. Keep it as the project/tool name for now.
+Loom AI is currently a working name. Keep it as the project/tool name for now.
 
 ## Product thesis
 
-Loom is **Make for AI workflows**.
+Loom AI is **Make for AI workflows**.
 
 It compiles parameterized prompts and workflow definitions into agent-ready artifacts, deterministic traces, and later black-box LLM executions.
 
-Do not frame Loom v0 as a generic “LLM programming language” implementation first. The long-term vision is a high-level workflow language over black-box LLMs, but the v0 product wedge is narrower:
+Do not frame Loom AI v0 as a generic “LLM programming language” implementation first. The long-term vision is a high-level workflow language over black-box LLMs, but the v0 product wedge is narrower:
 
 > Package reusable AI workflows as version-controlled source and compile them into deterministic artifacts existing coding agents can consume.
 
@@ -176,7 +176,7 @@ The implementation is acceptable when:
 11. Non-exported imported definitions produce clear diagnostics.
 12. Effects are checked: programs using `fs.write` must declare `effects = ["fs.write"]`.
 13. Unsupported operations such as `llm.complete` fail clearly in v0.
-14. The README reflects Loom’s PMF-adjusted positioning.
+14. The README reflects Loom AI’s PMF-adjusted positioning.
 
 ## Multi-agent execution guidance
 

@@ -1,6 +1,6 @@
-# Loom website
+# Loom AI website
 
-The static marketing + documentation site for Loom, served at
+The static marketing + documentation site for Loom AI, served at
 **https://loomai.glamcoder.org/**.
 
 It is a small, dependency-light static-site generator. The landing page and

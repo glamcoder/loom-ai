@@ -1,6 +1,6 @@
 # Testing
 
-Loom workflows generate the prompts and instructions that drive AI coding agents. If those artifacts are wrong, your agents go wrong — silently, and across every repo that copied them. Loom lets you assert workflow behavior the same way you'd test any other build output.
+Loom AI workflows generate the prompts and instructions that drive AI coding agents. If those artifacts are wrong, your agents go wrong — silently, and across every repo that copied them. Loom AI lets you assert workflow behavior the same way you'd test any other build output.
 
 ## Why AI workflows need tests
 

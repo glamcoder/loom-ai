@@ -2,7 +2,7 @@
 
 This guide walks you from install to your first generated artifact, trace, and passing test. It takes about five minutes.
 
-Loom v0 is **deterministic**: it makes no LLM calls and no network calls. Everything below runs locally from your inputs and your files.
+Loom AI v0 is **deterministic**: it makes no LLM calls and no network calls. Everything below runs locally from your inputs and your files.
 
 ## 1. Install
 
@@ -23,10 +23,10 @@ You should see the command list:
 ```
 Usage: loom [options] [command]
 
-Loom v0 — deterministic workflow compiler and runtime
+Loom AI v0 — deterministic workflow compiler and runtime
 
 Commands:
-  validate <file>                        Parse and validate a Loom module file
+  validate <file>                        Parse and validate a Loom AI module file
   compile <file> <program> [params...]   Compile a program to ProgramIR (prints JSON)
   run <file> <program> [params...]       Compile and run a program
   test <file>                            Run deterministic test blocks
@@ -224,7 +224,7 @@ rm -rf .loom src/billing/AGENTS.md
 
 ## Common first errors
 
-Loom fails fast with a clear, coded message. Here are the ones you'll most likely hit first.
+Loom AI fails fast with a clear, coded message. Here are the ones you'll most likely hit first.
 
 ### Missing required parameter
 

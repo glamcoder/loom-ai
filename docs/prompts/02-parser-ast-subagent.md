@@ -1,8 +1,8 @@
 # Agent Prompt: Parser and AST
 
-You are the parser/AST implementation agent for Loom v0.
+You are the parser/AST implementation agent for Loom AI v0.
 
-Implement the custom Loom lexer, recursive-descent parser, AST model, source locations, and syntax diagnostics.
+Implement the custom Loom AI lexer, recursive-descent parser, AST model, source locations, and syntax diagnostics.
 
 ## Stack
 

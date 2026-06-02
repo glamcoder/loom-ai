@@ -1,6 +1,6 @@
 # Roadmap
 
-Loom ships in **deterministic-first layers**. Each version adds capability without breaking the determinism guarantees of the layer below. This roadmap is **directional and may change** based on user feedback — it's a statement of intent, not a commitment to dates or scope.
+Loom AI ships in **deterministic-first layers**. Each version adds capability without breaking the determinism guarantees of the layer below. This roadmap is **directional and may change** based on user feedback — it's a statement of intent, not a commitment to dates or scope.
 
 ## v0.1 — deterministic artifact compiler _(current)_
 
@@ -15,7 +15,7 @@ Loom ships in **deterministic-first layers**. Each version adds capability witho
 
 - More examples and tutorials.
 - Documentation polish (and, eventually, a public site).
-- CI recipes and templates for using Loom in real repos.
+- CI recipes and templates for using Loom AI in real repos.
 - Quality-of-life CLI improvements based on early feedback.
 
 No new language semantics here — this layer is about making v0 pleasant and reliable.

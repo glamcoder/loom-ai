@@ -211,7 +211,7 @@ export function homePage() {
       <div>
         <span class="eyebrow"><span class="dot"></span> v${SITE.version} · deterministic developer preview</span>
         <h1>Make for <span class="thread-text">AI workflows</span>.</h1>
-        <p class="lede">Loom is a Git-native workflow language for packaging reusable AI work as code. It compiles parameterized <code>.loom</code> programs into agent-ready artifacts, traces, and deterministic tests.</p>
+        <p class="lede">Loom AI is a Git-native workflow language for packaging reusable AI work as code. It compiles parameterized <code>.loom</code> programs into agent-ready artifacts, traces, and deterministic tests.</p>
         <p class="subline">Stop copy-pasting prompts and hand-maintaining <code>AGENTS.md</code> across repos. Write one source of truth, compile it, test it in CI, and trace exactly what produced every file. v0 makes no LLM calls and no network calls.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="docs/getting-started.html">Get started <span aria-hidden="true">→</span></a>
@@ -254,7 +254,7 @@ export function homePage() {
       ${problemCards}
     </div>
     <p class="center muted" style="margin-top:32px;max-width:62ch;margin-left:auto;margin-right:auto">
-      Loom treats this as a <strong style="color:var(--fg)">build problem</strong>. You write declarative programs, compile them into artifacts, and get determinism, imports, tests, and traces for free.
+      Loom AI treats this as a <strong style="color:var(--fg)">build problem</strong>. You write declarative programs, compile them into artifacts, and get determinism, imports, tests, and traces for free.
     </p>
   </div>
 </section>
@@ -278,7 +278,7 @@ export function homePage() {
 <section class="section">
   <div class="container">
     <div class="section-head">
-      <div class="kicker">Why Loom</div>
+      <div class="kicker">Why Loom AI</div>
       <h2>The build layer beneath your AI tooling</h2>
       <p>Everything you'd expect from a real toolchain — types, modules, tests, traces — applied to the prompts and artifacts your agents consume.</p>
     </div>
@@ -294,7 +294,7 @@ export function homePage() {
       <div>
         <div class="kicker">In practice</div>
         <h3>Generate <code style="color:var(--thread-2)">AGENTS.md</code> instead of hand-maintaining it</h3>
-        <p>Use Loom wherever AI-facing files should be generated, not edited by hand. One shared prompt plus repo-specific params produces every flavor of agent instruction you need — and a test proves it stays correct.</p>
+        <p>Use Loom AI wherever AI-facing files should be generated, not edited by hand. One shared prompt plus repo-specific params produces every flavor of agent instruction you need — and a test proves it stays correct.</p>
         <ul>
           <li>Generate <code>AGENTS.md</code>, Copilot, Cursor, and Claude instructions from the same source.</li>
           <li>Generate PR-review checklists for sensitive areas like auth, billing, or migrations.</li>
@@ -335,7 +335,7 @@ Improve readability without changing behavior.
       <div>
         <div class="kicker">Honest positioning</div>
         <h3>Not an agent runtime. A toolchain for the inputs.</h3>
-        <p>Loom doesn't replace your agent loop, your eval harness, or your app's model-call site. It gives them clean, versioned, tested inputs — the place reusable prompt logic lives as code.</p>
+        <p>Loom AI doesn't replace your agent loop, your eval harness, or your app's model-call site. It gives them clean, versioned, tested inputs — the place reusable prompt logic lives as code.</p>
         <p class="muted" style="font-size:14.5px">v0 is deliberately small and deterministic. It's <strong>not</strong> LangGraph, <strong>not</strong> BAML, <strong>not</strong> promptfoo, and <strong>not</strong> an LLM wrapper — yet. See the full, fair breakdown.</p>
         <a class="btn btn-ghost btn-sm" href="docs/comparisons.html" style="margin-top:8px">See comparisons →</a>
       </div>
@@ -343,7 +343,7 @@ Improve readability without changing behavior.
         <div class="cmp-wrap">
           <table class="cmp">
             <thead>
-              <tr><th>Capability</th><th>Loom</th><th>BAML</th><th>LangGraph</th><th>promptfoo</th><th>Make</th></tr>
+              <tr><th>Capability</th><th>Loom AI</th><th>BAML</th><th>LangGraph</th><th>promptfoo</th><th>Make</th></tr>
             </thead>
             <tbody>
               ${cmpBody}

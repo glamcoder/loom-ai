@@ -262,7 +262,7 @@ export function lowerStep(
         "LOOM_COMPILE_UNSUPPORTED_OPERATION",
         `"${opKey}" is not supported in v0`,
         useExpr.span,
-        `Reserved operations are planned for future Loom versions.`,
+        `Reserved operations are planned for future Loom AI versions.`,
       );
     }
     // v0 operation

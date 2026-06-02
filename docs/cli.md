@@ -5,10 +5,10 @@ The `loom` command has four subcommands. All of them take a `.loom` file path; `
 ```
 Usage: loom [options] [command]
 
-Loom v0 — deterministic workflow compiler and runtime
+Loom AI v0 — deterministic workflow compiler and runtime
 
 Commands:
-  validate <file>                        Parse and validate a Loom module file
+  validate <file>                        Parse and validate a Loom AI module file
   compile <file> <program> [params...]   Compile a program to ProgramIR (prints JSON)
   run <file> <program> [params...]       Compile and run a program
   test <file>                            Run deterministic test blocks

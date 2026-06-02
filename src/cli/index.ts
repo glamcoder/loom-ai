@@ -13,7 +13,7 @@ const program = new Command();
 
 program
   .name("loom")
-  .description("Loom v0 — deterministic workflow compiler and runtime")
+  .description("Loom AI v0 — deterministic workflow compiler and runtime")
   .version("0.1.0");
 
 // Enable positional options so subcommands can see --key value tokens in
@@ -26,7 +26,7 @@ program.enablePositionalOptions();
 
 program
   .command("validate")
-  .description("Parse and validate a Loom module file")
+  .description("Parse and validate a Loom AI module file")
   .argument("<file>", "Path to a .loom file")
   .action((file: string) => {
     try {
@@ -200,7 +200,7 @@ program
 
 program
   .command("test")
-  .description("Run deterministic test blocks in a Loom module file")
+  .description("Run deterministic test blocks in a Loom AI module file")
   .argument("<file>", "Path to a .loom file containing test blocks")
   .action((file: string) => {
     let fileResult: TestFileResult;

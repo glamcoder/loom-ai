@@ -39,5 +39,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Loom site serving at http://localhost:${PORT}`);
+  console.log(`Loom AI site serving at http://localhost:${PORT}`);
 });

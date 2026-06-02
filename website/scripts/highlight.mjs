@@ -1,5 +1,5 @@
 /**
- * A tiny, dependency-free syntax highlighter for the Loom language (and the
+ * A tiny, dependency-free syntax highlighter for the Loom AI language (and the
  * HCL-ish `hcl` fences the docs use), plus passable highlighting for bash,
  * json/jsonc and diff. It emits <span class="tok-*"> wrapped HTML.
  *
@@ -63,7 +63,7 @@ const LOOM_BUILTINS = new Set([
 ]);
 
 /**
- * Highlight Loom / HCL source. Handles:
+ * Highlight Loom AI / HCL source. Handles:
  *  - # line comments
  *  - triple-quoted templates """ ... """ with {{ interpolation }}
  *  - double-quoted strings

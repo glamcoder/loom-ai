@@ -1,5 +1,5 @@
 /**
- * Loom v0 type system.
+ * Loom AI v0 type system.
  *
  * Several types are string-backed in v0 (they validate/are carried as strings).
  * Boolean / Integer / Number are scalar. Artifact is a produced output value.

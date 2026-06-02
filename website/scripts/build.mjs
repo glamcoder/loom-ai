@@ -163,7 +163,7 @@ function buildDocPage(doc) {
 </div>`;
 
   return page({
-    title: `${doc.title} · Loom`,
+    title: `${doc.title} · Loom AI`,
     desc: doc.desc,
     path: doc.slug,
     active: navActiveFor(doc.slug),
@@ -193,7 +193,7 @@ function build() {
     write(
       "index.html",
       page({
-        title: "Loom — Make for AI workflows",
+        title: "Loom AI — Make for AI workflows",
         desc: SITE.description,
         path: "index.html",
         active: "home",
@@ -207,7 +207,7 @@ function build() {
     write(
       "examples.html",
       page({
-        title: "Examples · Loom",
+        title: "Examples · Loom AI",
         desc: "Runnable .loom example programs: refactor briefs, PR-review instructions, and a shared prompt library.",
         path: "examples.html",
         active: "examples",
@@ -226,7 +226,7 @@ function build() {
     write(
       "404.html",
       page({
-        title: "Not found · Loom",
+        title: "Not found · Loom AI",
         desc: "Page not found.",
         path: "404.html",
         body: `<section class="container notfound">

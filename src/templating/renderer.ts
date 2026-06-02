@@ -2,7 +2,7 @@ import { LoomError } from "../language/diagnostics";
 import type { LoomScalar } from "../stdlib/types";
 
 /**
- * Tiny custom template renderer for Loom v0 prompt templates.
+ * Tiny custom template renderer for Loom AI v0 prompt templates.
  *
  * Replaces `{{ name }}` and `{{ param.name }}` (whitespace trimmed inside
  * braces; `param.` prefix is stripped). Unknown variable → LoomError.

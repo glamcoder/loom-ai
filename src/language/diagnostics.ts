@@ -63,7 +63,7 @@ export class LoomError extends Error {
 
   constructor(diagnostics: Diagnostic | Diagnostic[], message?: string) {
     const list = Array.isArray(diagnostics) ? diagnostics : [diagnostics];
-    super(message ?? list[0]?.message ?? "Loom error");
+    super(message ?? list[0]?.message ?? "Loom AI error");
     this.name = "LoomError";
     this.diagnostics = list;
   }

@@ -1,6 +1,6 @@
-# Contributing to Loom
+# Contributing to Loom AI
 
-Thanks for your interest! Loom is an early **v0.1.0 developer preview**. This guide covers how to work in the repo.
+Thanks for your interest! Loom AI is an early **v0.1.0 developer preview**. This guide covers how to work in the repo.
 
 ## Setup
 

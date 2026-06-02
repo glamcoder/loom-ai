@@ -1,7 +1,7 @@
 import type { SourceSpan } from "./source-location";
 
 /**
- * Loom v0 AST.
+ * Loom AI v0 AST.
  *
  * Conventions:
  * - Every node carries a `kind` discriminant and a `span`.

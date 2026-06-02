@@ -1,6 +1,6 @@
 # Agent Prompt: Runtime, Executors, Trace, and CLI
 
-You are the runtime/CLI implementation agent for Loom v0.
+You are the runtime/CLI implementation agent for Loom AI v0.
 
 Implement deterministic Program IR execution and CLI commands.
 

@@ -1,6 +1,6 @@
 # Agent Prompt: Semantic Validation, Type Checking, Effect Checking, and Program IR
 
-You are the semantic/compiler/IR implementation agent for Loom v0.
+You are the semantic/compiler/IR implementation agent for Loom AI v0.
 
 Take parsed AST plus resolved modules and compile selected programs into provider-neutral Program IR.
 

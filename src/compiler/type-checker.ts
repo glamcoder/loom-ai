@@ -10,7 +10,7 @@ import type { LoomScalar, LoomTypeName } from "../stdlib/types";
 import type { ParamIR } from "../ir/program-ir";
 
 /**
- * Coerce a raw string CLI value to the declared Loom type.
+ * Coerce a raw string CLI value to the declared Loom AI type.
  * Throws `LOOM_TYPE_INVALID_VALUE` on failure.
  */
 export function coerceParamValue(

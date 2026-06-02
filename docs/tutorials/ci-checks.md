@@ -2,11 +2,11 @@
 
 ## What you'll build
 
-A CI job that keeps your Loom workflows honest: it validates every `.loom` file, runs the deterministic tests, and (optionally) checks that committed generated artifacts are up to date with their source.
+A CI job that keeps your Loom AI workflows honest: it validates every `.loom` file, runs the deterministic tests, and (optionally) checks that committed generated artifacts are up to date with their source.
 
 ## Why
 
-Loom is Git-native: `.loom` source and the artifacts it produces both live in your repo. Two things can rot:
+Loom AI is Git-native: `.loom` source and the artifacts it produces both live in your repo. Two things can rot:
 
 1. A workflow stops compiling or a test starts failing.
 2. Someone edits a prompt but forgets to regenerate the committed `AGENTS.md`/`REVIEW.md`, so the checked-in artifact drifts from its source.
@@ -49,7 +49,7 @@ rm -rf .loom
 git diff --exit-code src/billing/AGENTS.md
 ```
 
-`git diff --exit-code` returns non-zero if the regenerated artifact differs from what's committed — i.e. someone changed the prompt but didn't re-run Loom.
+`git diff --exit-code` returns non-zero if the regenerated artifact differs from what's committed — i.e. someone changed the prompt but didn't re-run Loom AI.
 If the artifact might be missing entirely, also check `git status --porcelain`
 for that path so untracked generated files fail the job too.
 
@@ -109,4 +109,4 @@ jobs:
 
 - Loop over files with a shell `for` loop or a small script instead of listing them.
 - If you don't commit generated artifacts, drop step 3 entirely — `validate` + `test` is plenty.
-- Pin a Loom version (`npm install -g loom-ai@0.1.0`) so CI is reproducible.
+- Pin a Loom AI version (`npm install -g loom-ai@0.1.0`) so CI is reproducible.

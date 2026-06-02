@@ -1,10 +1,10 @@
 /** Shared HTML chrome: <head>, nav, footer, and the page shell. */
 
 export const SITE = {
-  name: "Loom",
+  name: "Loom AI",
   tagline: "Make for AI workflows.",
   description:
-    "Loom is a Git-native workflow language for packaging reusable AI work as code. It compiles parameterized .loom programs into agent-ready artifacts, traces, and deterministic tests — no LLM calls, no network.",
+    "Loom AI is a Git-native workflow language for packaging reusable AI work as code. It compiles parameterized .loom programs into agent-ready artifacts, traces, and deterministic tests — no LLM calls, no network.",
   url: "https://glamcoder.github.io/loom-ai",
   repo: "https://github.com/glamcoder/loom-ai",
   npm: "https://www.npmjs.com/package/loom-ai",
@@ -54,7 +54,7 @@ export function page(opts) {
 <link rel="icon" type="image/svg+xml" href="${root}assets/favicon.svg" />
 
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="Loom" />
+<meta property="og:site_name" content="Loom AI" />
 <meta property="og:title" content="${title}" />
 <meta property="og:description" content="${desc}" />
 <meta property="og:url" content="${canonical}" />
@@ -75,7 +75,7 @@ ${extraHead}
   <div class="container nav-inner">
     <a class="brand" href="${root}index.html">
       ${LOGO}
-      <span>Loom</span>
+      <span>Loom AI</span>
       <span class="tag">v${SITE.version}</span>
     </a>
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
@@ -99,7 +99,7 @@ ${body}
   <div class="container">
     <div class="footer-grid">
       <div>
-        <a class="brand" href="${root}index.html">${LOGO}<span>Loom</span></a>
+        <a class="brand" href="${root}index.html">${LOGO}<span>Loom AI</span></a>
         <p class="blurb">The build layer beneath your AI tooling. Reusable prompt logic as code — imported across repos, tested in CI, compiled to the artifacts your agents consume.</p>
       </div>
       <div>
@@ -134,7 +134,7 @@ ${body}
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© ${new Date().getFullYear()} Loom contributors. Apache-2.0 licensed. <strong>Loom is a working name</strong> and may change before a stable release.</p>
+      <p>© ${new Date().getFullYear()} Loom AI contributors. Apache-2.0 licensed. <strong>Loom AI is a temporary working name</strong> and may change before a stable release.</p>
       <span class="footer-note">v${SITE.version} · deterministic developer preview · no LLM calls</span>
     </div>
   </div>

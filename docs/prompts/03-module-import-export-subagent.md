@@ -1,6 +1,6 @@
 # Agent Prompt: Module Imports and Exports
 
-You are the module system implementation agent for Loom v0.
+You are the module system implementation agent for Loom AI v0.
 
 Implement local file imports, explicit exports, module loading, dependency graph handling, and import/export diagnostics.
 

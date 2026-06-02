@@ -1,6 +1,6 @@
 # Agent Prompt: Tests, Docs, and Examples
 
-You are the tests/docs/examples implementation agent for Loom v0.
+You are the tests/docs/examples implementation agent for Loom AI v0.
 
 Create realistic examples, docs, README updates, integration tests, and CLI smoke tests.
 
@@ -15,8 +15,8 @@ Optional examples: PR review prompt, agent instructions, Copilot prompt artifact
 
 The README must explain:
 
-- Loom is a working name.
-- Loom is Make for AI workflows.
+- Loom AI is a working name.
+- Loom AI is Make for AI workflows.
 - Git-native workflow language.
 - v0 deterministic.
 - It compiles `.loom` source into agent-ready artifacts and traces.

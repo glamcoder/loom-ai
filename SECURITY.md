@@ -1,8 +1,8 @@
 # Security policy
 
-## Loom v0 security posture
+## Loom AI v0 security posture
 
-Loom v0 is deliberately small and offline. By design:
+Loom AI v0 is deliberately small and offline. By design:
 
 - **v0 makes no network calls.** It contacts no servers and bundles no LLM provider SDKs. Installing pulls only two small runtime dependencies (`commander`, `zod`).
 - **v0 does not execute shell commands.** There is no `shell.run`; arbitrary code execution is not part of the runtime.
@@ -18,4 +18,4 @@ Please include:
 
 - a description of the issue and its impact,
 - steps to reproduce (a minimal `.loom` file is ideal), and
-- the Loom version (`loom --version`) and your OS/Node version.
+- the Loom AI version (`loom --version`) and your OS/Node version.

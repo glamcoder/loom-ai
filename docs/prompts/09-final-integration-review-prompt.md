@@ -1,6 +1,6 @@
 # Agent Prompt: Final Integration Review
 
-You are the final integration review agent for Loom v0.
+You are the final integration review agent for Loom AI v0.
 
 Review the implementation against the latest PMF-adjusted spec.
 

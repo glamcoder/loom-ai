@@ -2,7 +2,7 @@
 
 ## What you'll build
 
-A workflow that turns a diff and a target path into a `REVIEW.md` — agent-agnostic review instructions you can drop next to a PR. This uses the shipped `examples/review.loom` and `examples/prompts/review.loom`, and shows Loom as an artifact generator that isn't tied to any one agent's file format.
+A workflow that turns a diff and a target path into a `REVIEW.md` — agent-agnostic review instructions you can drop next to a PR. This uses the shipped `examples/review.loom` and `examples/prompts/review.loom`, and shows Loom AI as an artifact generator that isn't tied to any one agent's file format.
 
 ## The source files
 
@@ -123,7 +123,7 @@ test "prepare_review_renders_review_file" {
 
 - **Generating review instructions from a diff/path** — `diff` is the change to review, `path` decides where `REVIEW.md` lands (`dirname(path)/REVIEW.md`).
 - **Writing REVIEW.md** — same `fs.write` + `effects` pattern as AGENTS.md, just a different target file.
-- **An agent-agnostic artifact generator** — the output is plain Markdown. Whatever reads it — a human, Copilot, Claude Code, Cursor — gets the same instructions. Loom doesn't lock you into one agent's format.
+- **An agent-agnostic artifact generator** — the output is plain Markdown. Whatever reads it — a human, Copilot, Claude Code, Cursor — gets the same instructions. Loom AI doesn't lock you into one agent's format.
 
 ## Command sequence
 

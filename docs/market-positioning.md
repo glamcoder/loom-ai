@@ -1,8 +1,8 @@
-# Loom Market Positioning
+# Loom AI Market Positioning
 
 > Background positioning document; most users should read [docs/comparisons.md](comparisons.md) instead.
 >
-> Note: "Loom" is a working name. There are known naming collisions. The project may adopt a different public name before serious release.
+> Note: "Loom AI" is a **temporary working name**. There are known naming collisions. The project may adopt a different public name before serious release.
 
 ---
 
@@ -16,7 +16,7 @@ Make for AI workflows.
 
 ## The longer pitch
 
-Loom is a Git-native workflow language for packaging reusable AI work as code.
+Loom AI is a Git-native workflow language for packaging reusable AI work as code.
 
 It compiles parameterized prompts and workflow definitions into:
 
@@ -25,22 +25,22 @@ It compiles parameterized prompts and workflow definitions into:
 - deterministic execution traces;
 - and, in future versions, black-box LLM executions.
 
-Loom starts where developers already are: repo-local instruction files, copy-pasted prompts, and ad-hoc workflow snippets. It turns those into versioned, testable, composable source code.
+Loom AI starts where developers already are: repo-local instruction files, copy-pasted prompts, and ad-hoc workflow snippets. It turns those into versioned, testable, composable source code.
 
 ---
 
-## What Loom is NOT
+## What Loom AI is NOT
 
-Loom is frequently misread as a variant of existing tools. It is not.
+Loom AI is frequently misread as a variant of existing tools. It is not.
 
-| Tool / category            | Why Loom is different                                                                                                                                                                    |
+| Tool / category            | Why Loom AI is different                                                                                                                                                                    |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **BAML**                   | BAML is a schema language for structured LLM outputs. Loom is a workflow language; structured output handling is a future step that happens outside the model, not baked in.             |
-| **DSPy**                   | DSPy optimizes prompts via gradient-like feedback. Loom makes no assumptions about model internals and does not optimize prompts automatically.                                          |
-| **LangGraph**              | LangGraph is a Python graph execution framework for stateful agents. Loom is a compiled DSL; it has no Python dependency and no graph runtime in v0.                                     |
-| **promptfoo**              | promptfoo is a prompt evaluation and testing harness. Loom is a workflow compiler that can produce promptfoo-compatible inputs as an output artifact, but evaluation is not its purpose. |
-| **Flowise / LangFlow**     | Visual drag-and-drop agent builders. Loom is code-first, Git-native, and has no visual editor or hosted runtime in v0.                                                                   |
-| **Hosted agent platforms** | Loom v0 is a local CLI compiler/runtime. There is no hosted execution, no cloud platform, and no subscription in v0.                                                                     |
+| **BAML**                   | BAML is a schema language for structured LLM outputs. Loom AI is a workflow language; structured output handling is a future step that happens outside the model, not baked in.             |
+| **DSPy**                   | DSPy optimizes prompts via gradient-like feedback. Loom AI makes no assumptions about model internals and does not optimize prompts automatically.                                          |
+| **LangGraph**              | LangGraph is a Python graph execution framework for stateful agents. Loom AI is a compiled DSL; it has no Python dependency and no graph runtime in v0.                                     |
+| **promptfoo**              | promptfoo is a prompt evaluation and testing harness. Loom AI is a workflow compiler that can produce promptfoo-compatible inputs as an output artifact, but evaluation is not its purpose. |
+| **Flowise / LangFlow**     | Visual drag-and-drop agent builders. Loom AI is code-first, Git-native, and has no visual editor or hosted runtime in v0.                                                                   |
+| **Hosted agent platforms** | Loom AI v0 is a local CLI compiler/runtime. There is no hosted execution, no cloud platform, and no subscription in v0.                                                                     |
 
 ---
 

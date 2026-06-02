@@ -1,5 +1,5 @@
 /**
- * Loom v0 compiler — public API.
+ * Loom AI v0 compiler — public API.
  *
  * `validateModule` — structural semantic/type/effect validation (no param binding).
  * `compileProgram` — validate + bind params + lower to ProgramIR.

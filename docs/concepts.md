@@ -1,6 +1,6 @@
 # Concepts
 
-Loom has a small vocabulary. This page explains each concept in plain language with short examples. For the formal grammar and rules, see [docs/language-v0.md](language-v0.md).
+Loom AI has a small vocabulary. This page explains each concept in plain language with short examples. For the formal grammar and rules, see [docs/language-v0.md](language-v0.md).
 
 ## Module
 

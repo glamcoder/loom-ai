@@ -1,12 +1,12 @@
 # Agent Prompt: Deterministic Workflow Tests
 
-You are the deterministic test-runner implementation agent for Loom v0.
+You are the deterministic test-runner implementation agent for Loom AI v0.
 
 This feature matters for PMF: AI workflows should be testable like code.
 
 ## Goal
 
-Implement `loom test` for deterministic Loom programs.
+Implement `loom test` for deterministic Loom AI programs.
 
 No LLM calls. No external agents. No shell execution.
 

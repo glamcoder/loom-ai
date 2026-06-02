@@ -1,6 +1,6 @@
-# Loom Language Reference — v0
+# Loom AI Language Reference — v0
 
-This document is the authoritative reference for the Loom DSL as implemented in v0. v0 is strictly deterministic: no real LLM calls, no provider SDKs, no network or shell execution.
+This document is the authoritative reference for the Loom AI DSL as implemented in v0. v0 is strictly deterministic: no real LLM calls, no provider SDKs, no network or shell execution.
 
 ---
 
