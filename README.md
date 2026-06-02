@@ -1,3 +1,5 @@
+![GitHub License](https://img.shields.io/github/license/glamcoder/loom-ai) ![Build Status](https://img.shields.io/github/actions/workflow/status/glamcoder/loom-ai/ci.yml)
+
 # Loom AI
 
 > Make for AI workflows.
@@ -233,4 +235,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Security policy: [SECURITY.md](SECURITY.
 
 ## License
 
-[Apache-2.0](LICENSE)
+[MIT](LICENSE)
