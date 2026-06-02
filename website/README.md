@@ -1,7 +1,7 @@
 # Loom website
 
 The static marketing + documentation site for Loom, served at
-**https://glamcoder.github.io/loom-ai/**.
+**https://loomai.glamcoder.org/**.
 
 It is a small, dependency-light static-site generator. The landing page and
 examples page are hand-authored; every page under `/docs` is generated from the
