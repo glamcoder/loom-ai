@@ -232,7 +232,7 @@ export function homePage() {
 <section class="section-tight">
   <div class="container center">
     <div class="badges" style="justify-content:center">
-      <span class="badge"><span class="g"></span> Apache-2.0</span>
+      <span class="badge"><span class="g"></span> MIT</span>
       <span class="badge"><span class="g"></span> Zero LLM / network calls in v0</span>
       <span class="badge"><span class="g"></span> Node ≥ 20</span>
       <span class="badge"><span class="g"></span> Two dependencies</span>

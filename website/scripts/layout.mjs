@@ -129,12 +129,12 @@ ${body}
           <li><a href="${root}docs/architecture.html">Architecture</a></li>
           <li><a href="${SITE.repo}" target="_blank" rel="noopener">GitHub</a></li>
           <li><a href="${SITE.npm}" target="_blank" rel="noopener">npm package</a></li>
-          <li><a href="${SITE.repo}/blob/main/LICENSE" target="_blank" rel="noopener">License (Apache-2.0)</a></li>
+          <li><a href="${SITE.repo}/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© ${new Date().getFullYear()} Loom AI contributors. Apache-2.0 licensed. <strong>Loom AI is a temporary working name</strong> and may change before a stable release.</p>
+      <p>© ${new Date().getFullYear()} Loom AI contributors. MIT licensed. <strong>Loom AI is a temporary working name</strong> and may change before a stable release.</p>
       <span class="footer-note">v${SITE.version} · deterministic developer preview · no LLM calls</span>
     </div>
   </div>
