@@ -72,21 +72,8 @@ PASS  prepare_refactor_renders_agent_file
 
 1 passed, 0 failed`;
 
-const term = (code) =>
-  `<div class="term">${highlight(code, "bash")
-    .split("\n")
-    .map((l) =>
-      l.startsWith('<span class="tok-comment">') || /passed|written|Trace|module|imports|exported|tests|PASS|->/.test(l.replace(/<[^>]+>/g, ""))
-        ? l
-        : l,
-    )
-    .join("\n")}</div>`;
-
 const PROBLEMS = [
-  [
-    "Copy-pasted prompts",
-    "scattered across wikis, Slack, and people's heads.",
-  ],
+  ["Copy-pasted prompts", "scattered across wikis, Slack, and people's heads."],
   [
     "Manual placeholder swaps",
     "&ldquo;remember to substitute the file name&rdquo; — every single time.",
@@ -95,18 +82,9 @@ const PROBLEMS = [
     "Duplicated agent instructions",
     "AGENTS.md, Claude, Copilot, and Cursor files drift out of sync across repos.",
   ],
-  [
-    "No import / export boundary",
-    "no clean way to share prompt logic between projects.",
-  ],
-  [
-    "No deterministic tests",
-    "for the workflows that generate your prompts.",
-  ],
-  [
-    "No trace",
-    "of what generated a given artifact, or from which inputs.",
-  ],
+  ["No import / export boundary", "no clean way to share prompt logic between projects."],
+  ["No deterministic tests", "for the workflows that generate your prompts."],
+  ["No trace", "of what generated a given artifact, or from which inputs."],
 ];
 
 const FEATURES = [
@@ -149,16 +127,35 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  ["01", "loom <b>validate</b>", "Parse, resolve imports, and run type / effect / reference checks. Writes nothing — a fast CI gate."],
-  ["02", "loom <b>compile</b>", "Lower a program to its provider-neutral Program IR and print it as JSON. Read-only; inspect the plan before you run."],
-  ["03", "loom <b>run</b>", "Render prompts, write the files steps declare, and record a trace under .loom/runs/&lt;run-id&gt;/."],
-  ["04", "loom <b>test</b>", "Run every test block in memory with output, file, and effect assertions. Exits non-zero on failure."],
+  [
+    "01",
+    "loom <b>validate</b>",
+    "Parse, resolve imports, and run type / effect / reference checks. Writes nothing — a fast CI gate.",
+  ],
+  [
+    "02",
+    "loom <b>compile</b>",
+    "Lower a program to its provider-neutral Program IR and print it as JSON. Read-only; inspect the plan before you run.",
+  ],
+  [
+    "03",
+    "loom <b>run</b>",
+    "Render prompts, write the files steps declare, and record a trace under .loom/runs/&lt;run-id&gt;/.",
+  ],
+  [
+    "04",
+    "loom <b>test</b>",
+    "Run every test block in memory with output, file, and effect assertions. Exits non-zero on failure.",
+  ],
 ];
 
 const CMP_ROWS = [
   ["Calls an LLM (v0)", { loom: "no", baml: "yes", lg: "yes", pf: "yes", make: "no" }],
   ["Deterministic / reproducible", { loom: "yes", baml: "no", lg: "no", pf: "no", make: "yes" }],
-  ["Prompts as version-controlled code", { loom: "yes", baml: "yes", lg: "no", pf: "no", make: "no" }],
+  [
+    "Prompts as version-controlled code",
+    { loom: "yes", baml: "yes", lg: "no", pf: "no", make: "no" },
+  ],
   ["Import / export across repos", { loom: "yes", baml: "yes", lg: "no", pf: "no", make: "no" }],
   ["Built-in tests for the workflow", { loom: "yes", baml: "no", lg: "no", pf: "yes", make: "no" }],
   ["Run trace per execution", { loom: "yes", baml: "no", lg: "no", pf: "no", make: "no" }],
@@ -226,7 +223,7 @@ export function homePage() {
         </div>
       </div>
       <div>
-        ${win('hello.loom', "loom", HELLO)}
+        ${win("hello.loom", "loom", HELLO)}
       </div>
     </div>
   </div>
@@ -307,7 +304,10 @@ export function homePage() {
         <a class="btn btn-ghost btn-sm" href="docs/tutorials/generate-agents-md.html" style="margin-top:8px">Read the tutorial →</a>
       </div>
       <div class="split-media">
-        ${win('src/billing/AGENTS.md', "loom", `# Refactor method \`calculateTotalCost\`
+        ${win(
+          "src/billing/AGENTS.md",
+          "loom",
+          `# Refactor method \`calculateTotalCost\`
 
 You are refactoring \`calculateTotalCost\`
 in \`src/billing/costs.ts\`.
@@ -322,7 +322,8 @@ Improve readability without changing behavior.
   smallest necessary surrounding code.
 - Preserve external behavior.
 - Preserve the public API.
-- Keep the diff small and reviewable.`.replace(/`/g, "`"))}
+- Keep the diff small and reviewable.`.replace(/`/g, "`"),
+        )}
       </div>
     </div>
   </div>

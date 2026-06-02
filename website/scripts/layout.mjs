@@ -33,15 +33,7 @@ const LOGO = `<svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns=
  * @param {string} [opts.bodyClass]
  */
 export function page(opts) {
-  const {
-    title,
-    desc,
-    path,
-    body,
-    active = "",
-    extraHead = "",
-    bodyClass = "",
-  } = opts;
+  const { title, desc, path, body, active = "", extraHead = "", bodyClass = "" } = opts;
   const depth = path.split("/").length - 1;
   const root = depth === 0 ? "./" : "../".repeat(depth);
   const canonical = `${SITE.url}/${path}`;

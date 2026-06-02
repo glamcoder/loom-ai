@@ -8,10 +8,7 @@
  */
 
 function esc(s) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 const LOOM_KEYWORDS = new Set([
@@ -112,9 +109,7 @@ function highlightLoom(src) {
           rendered += esc(body.slice(open));
           break;
         }
-        rendered += `<span class="tok-interp">${esc(
-          body.slice(open, close + 2),
-        )}</span>`;
+        rendered += `<span class="tok-interp">${esc(body.slice(open, close + 2))}</span>`;
         k = close + 2;
       }
       out += `<span class="tok-str">${rendered}</span>`;
@@ -222,10 +217,7 @@ function highlightBash(src) {
 function highlightJson(src) {
   let html = esc(src);
   // comments (jsonc)
-  html = html.replace(
-    /(\/\/[^\n]*)/g,
-    (m) => `<span class="tok-comment">${m}</span>`,
-  );
+  html = html.replace(/(\/\/[^\n]*)/g, (m) => `<span class="tok-comment">${m}</span>`);
   html = html.replace(
     /(&quot;(?:[^&]|&(?!quot;))*?&quot;)(\s*:)/g,
     (m, key, colon) => `<span class="tok-attr">${key}</span>${colon}`,
@@ -234,10 +226,7 @@ function highlightJson(src) {
     /:(\s*)(&quot;(?:[^&]|&(?!quot;))*?&quot;)/g,
     (m, ws, val) => `:${ws}<span class="tok-str">${val}</span>`,
   );
-  html = html.replace(
-    /\b(true|false|null)\b/g,
-    (m) => `<span class="tok-num">${m}</span>`,
-  );
+  html = html.replace(/\b(true|false|null)\b/g, (m) => `<span class="tok-num">${m}</span>`);
   html = html.replace(
     /([:[,]\s*)(-?\d+(?:\.\d+)?)/g,
     (m, pre, num) => `${pre}<span class="tok-num">${num}</span>`,
@@ -250,12 +239,9 @@ function highlightDiff(src) {
     .split("\n")
     .map((line) => {
       const e = esc(line);
-      if (line.startsWith("+"))
-        return `<span class="tok-str">${e}</span>`;
-      if (line.startsWith("-"))
-        return `<span class="tok-comment">${e}</span>`;
-      if (line.startsWith("@"))
-        return `<span class="tok-fn">${e}</span>`;
+      if (line.startsWith("+")) return `<span class="tok-str">${e}</span>`;
+      if (line.startsWith("-")) return `<span class="tok-comment">${e}</span>`;
+      if (line.startsWith("@")) return `<span class="tok-fn">${e}</span>`;
       return e;
     })
     .join("\n");
@@ -264,8 +250,7 @@ function highlightDiff(src) {
 export function highlight(src, lang) {
   const l = (lang || "").toLowerCase();
   if (l === "loom" || l === "hcl" || l === "tf") return highlightLoom(src);
-  if (l === "bash" || l === "sh" || l === "shell" || l === "console")
-    return highlightBash(src);
+  if (l === "bash" || l === "sh" || l === "shell" || l === "console") return highlightBash(src);
   if (l === "json" || l === "jsonc") return highlightJson(src);
   if (l === "diff") return highlightDiff(src);
   // markdown / text / unknown

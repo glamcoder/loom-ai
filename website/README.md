@@ -27,16 +27,16 @@ npm run serve        # serve an already-built dist/
 
 ## How it works
 
-| File                       | Role                                                                    |
-| -------------------------- | ----------------------------------------------------------------------- |
-| `scripts/build.mjs`        | Orchestrator. Renders Markdown, builds docs nav/prev-next, writes pages. |
-| `scripts/layout.mjs`       | Shared `<head>`, nav, footer, and the HTML shell + site metadata.       |
-| `scripts/page-home.mjs`    | The landing page.                                                       |
-| `scripts/page-examples.mjs`| The examples page (reads real `.loom` files from `../examples`).        |
-| `scripts/docs-config.mjs`  | Which `../docs/*.md` become pages, and how they're grouped in the nav.  |
-| `scripts/highlight.mjs`    | Dependency-free syntax highlighter for `.loom` / HCL / bash / json / diff. |
-| `scripts/check-links.mjs`  | Internal link + anchor checker (fails the build on a broken link).      |
-| `assets/`                  | CSS, client JS, favicon, and the social/OG image.                       |
+| File                        | Role                                                                       |
+| --------------------------- | -------------------------------------------------------------------------- |
+| `scripts/build.mjs`         | Orchestrator. Renders Markdown, builds docs nav/prev-next, writes pages.   |
+| `scripts/layout.mjs`        | Shared `<head>`, nav, footer, and the HTML shell + site metadata.          |
+| `scripts/page-home.mjs`     | The landing page.                                                          |
+| `scripts/page-examples.mjs` | The examples page (reads real `.loom` files from `../examples`).           |
+| `scripts/docs-config.mjs`   | Which `../docs/*.md` become pages, and how they're grouped in the nav.     |
+| `scripts/highlight.mjs`     | Dependency-free syntax highlighter for `.loom` / HCL / bash / json / diff. |
+| `scripts/check-links.mjs`   | Internal link + anchor checker (fails the build on a broken link).         |
+| `assets/`                   | CSS, client JS, favicon, and the social/OG image.                          |
 
 The only runtime dependencies are `markdown-it` and `markdown-it-anchor`. They
 live in this directory's own `package.json` and are **not** part of the

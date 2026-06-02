@@ -14,14 +14,14 @@
   document.querySelectorAll("[data-copy]").forEach(function (el) {
     el.addEventListener("click", function () {
       var text = el.getAttribute("data-copy");
-      navigator.clipboard &&
-        navigator.clipboard.writeText(text).then(function () {
-          var prev = el.textContent;
-          el.textContent = "copied";
-          setTimeout(function () {
-            el.textContent = prev;
-          }, 1300);
-        });
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text).then(function () {
+        var prev = el.textContent;
+        el.textContent = "copied";
+        setTimeout(function () {
+          el.textContent = prev;
+        }, 1300);
+      });
     });
   });
 
@@ -44,9 +44,7 @@
   });
 
   // Docs sidebar: highlight the section currently in view
-  var tocLinks = Array.prototype.slice.call(
-    document.querySelectorAll(".docs-side a[href^='#']"),
-  );
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll(".docs-side a[href^='#']"));
   if (tocLinks.length && "IntersectionObserver" in window) {
     var map = {};
     tocLinks.forEach(function (a) {
