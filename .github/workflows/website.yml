@@ -1,11 +1,22 @@
 name: Website
 
 on:
-  # Build the site on every push and PR so a broken site can't merge.
+  # Build the site on every push and PR so a broken site can't merge — but
+  # only when something the site is built from actually changed.
   push:
     branches: [main]
+    paths:
+      - "website/**"
+      - "docs/**"
+      - "examples/**"
+      - ".github/workflows/website.yml"
   pull_request:
-  # Allow manual redeploys from the Actions tab.
+    paths:
+      - "website/**"
+      - "docs/**"
+      - "examples/**"
+      - ".github/workflows/website.yml"
+  # Allow manual redeploys from the Actions tab (ignores the path filters).
   workflow_dispatch:
 
 # Allow the deploy job to publish to GitHub Pages.

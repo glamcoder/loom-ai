@@ -35,9 +35,7 @@ let checked = 0;
 for (const file of htmlFiles) {
   const html = fs.readFileSync(file, "utf8");
   const dir = path.dirname(file);
-  const attrs = [
-    ...html.matchAll(/(?:href|src)="([^"]+)"/g),
-  ].map((m) => m[1]);
+  const attrs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
 
   for (const ref of attrs) {
     if (/^(https?:|mailto:|data:|#)/.test(ref)) {
